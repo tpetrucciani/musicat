@@ -1,10 +1,12 @@
 module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
 
 import Browser
+import Dict exposing (Dict)
 import Html exposing (Html, a, div, img, text)
 import Html.Attributes exposing (href, src)
 import Http
 import Json.Decode exposing (Decoder, field, list, map, map2, map4, string)
+import Set
 
 
 
@@ -31,7 +33,9 @@ type Model
 
 
 type alias Catalogue =
-    { albums : List Album }
+    { albums : List Album
+    , byGenre : Dict Genre (Dict Artist (List Album))
+    }
 
 
 type alias Album =
@@ -78,9 +82,9 @@ init _ =
     )
 
 
-catalogueDecoder : Decoder Catalogue
+catalogueDecoder : Decoder (List Album)
 catalogueDecoder =
-    map Catalogue (field "albums" (list albumDecoder))
+    field "albums" (list albumDecoder)
 
 
 albumDecoder : Decoder Album
@@ -102,7 +106,7 @@ entryDecoder =
 
 
 type Msg
-    = GotCatalogue (Result Http.Error Catalogue)
+    = GotCatalogue (Result Http.Error (List Album))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -111,13 +115,54 @@ update msg model =
         GotCatalogue result ->
             case result of
                 Ok catalogue ->
-                    ( Success catalogue, Cmd.none )
+                    ( Success (makeCatalogue catalogue), Cmd.none )
 
                 Err (Http.BadBody err) ->
                     ( Failure err, Cmd.none )
 
                 Err _ ->
                     ( Failure "Error", Cmd.none )
+
+
+makeCatalogue : List Album -> Catalogue
+makeCatalogue albums =
+    let
+        getEntries album =
+            List.map
+                (\e -> { genre = e.genre, artist = e.artist, album = album })
+                album.entries
+
+        entries =
+            List.concatMap getEntries albums
+
+        getField f =
+            entries
+                |> List.map f
+                |> Set.fromList
+
+        genres =
+            getField .genre
+
+        artists =
+            getField .artist
+
+        albumsForGenreArtist g a =
+            entries
+                |> List.filter (\e -> e.genre == g && e.artist == a)
+                |> List.map .album
+
+        dictForGenre g =
+            initDict artists (albumsForGenreArtist g)
+
+        byGenre =
+            initDict genres dictForGenre
+    in
+    { albums = albums, byGenre = byGenre }
+
+
+initDict : Set.Set comparable -> (comparable -> a) -> Dict comparable a
+initDict s f =
+    Set.foldl (\x -> Dict.insert x (f x)) Dict.empty s
 
 
 
@@ -151,7 +196,20 @@ viewBody model =
 
         Success catalogue ->
             div []
-                (List.map displayAlbum catalogue.albums)
+                (catalogue.byGenre
+                    |> Dict.get "Classical"
+                    |> Maybe.withDefault Dict.empty
+                    |> Dict.toList
+                    |> List.map displayArtist
+                )
+
+
+displayArtist : ( Artist, List Album ) -> Html msg
+displayArtist ( artist, albums ) =
+    div []
+        [ text artist
+        , div [] (List.map displayAlbum albums)
+        ]
 
 
 displayAlbum : Album -> Html msg
