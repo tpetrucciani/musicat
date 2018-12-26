@@ -3,7 +3,8 @@ module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, vie
 import Browser
 import Dict exposing (Dict)
 import Html exposing (Html, a, div, img, text)
-import Html.Attributes exposing (href, src)
+import Html.Attributes exposing (href, id, src)
+import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, field, list, map, map2, map4, string)
 import Set
@@ -27,14 +28,21 @@ main =
 
 
 type Model
-    = Failure String
-    | Loading
-    | Success Catalogue
+    = Loading
+    | Failure String
+    | Success State
+
+
+type alias State =
+    { catalogue : Catalogue
+    , byGenre : Dict Genre (Dict Artist (List Album))
+    , genres : List Genre
+    , viewOptions : ViewOptions
+    }
 
 
 type alias Catalogue =
     { albums : List Album
-    , byGenre : Dict Genre (Dict Artist (List Album))
     }
 
 
@@ -72,6 +80,11 @@ type alias CommentString =
     String
 
 
+type alias ViewOptions =
+    { currentGenre : Genre
+    }
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( Loading
@@ -82,9 +95,9 @@ init _ =
     )
 
 
-catalogueDecoder : Decoder (List Album)
+catalogueDecoder : Decoder Catalogue
 catalogueDecoder =
-    field "albums" (list albumDecoder)
+    map Catalogue (field "albums" (list albumDecoder))
 
 
 albumDecoder : Decoder Album
@@ -106,26 +119,53 @@ entryDecoder =
 
 
 type Msg
-    = GotCatalogue (Result Http.Error (List Album))
+    = GotCatalogue (Result Http.Error Catalogue)
+    | SetGenre Genre
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        GotCatalogue result ->
-            case result of
-                Ok catalogue ->
-                    ( Success (makeCatalogue catalogue), Cmd.none )
+    case model of
+        Loading ->
+            case msg of
+                GotCatalogue result ->
+                    case result of
+                        Ok catalogue ->
+                            ( Success (makeState catalogue), Cmd.none )
 
-                Err (Http.BadBody err) ->
-                    ( Failure err, Cmd.none )
+                        Err (Http.BadBody err) ->
+                            ( Failure err, Cmd.none )
 
-                Err _ ->
-                    ( Failure "Error", Cmd.none )
+                        Err _ ->
+                            ( Failure "Error", Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        Failure _ ->
+            ( model, Cmd.none )
+
+        Success state ->
+            case msg of
+                SetGenre genre ->
+                    let
+                        oldViewOptions =
+                            state.viewOptions
+
+                        newViewOptions =
+                            { oldViewOptions | currentGenre = genre }
+
+                        newState =
+                            { state | viewOptions = newViewOptions }
+                    in
+                    ( Success newState, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
-makeCatalogue : List Album -> Catalogue
-makeCatalogue albums =
+makeState : Catalogue -> State
+makeState catalogue =
     let
         getEntries album =
             List.map
@@ -133,7 +173,7 @@ makeCatalogue albums =
                 album.entries
 
         entries =
-            List.concatMap getEntries albums
+            List.concatMap getEntries catalogue.albums
 
         getField f =
             entries
@@ -156,8 +196,21 @@ makeCatalogue albums =
 
         byGenre =
             initDict genres dictForGenre
+
+        filteredByGenre =
+            byGenre
+                |> Dict.map
+                    (\genre albumsByArtist ->
+                        Dict.filter
+                            (\_ albums -> not (List.isEmpty albums))
+                            albumsByArtist
+                    )
     in
-    { albums = albums, byGenre = byGenre }
+    { catalogue = catalogue
+    , byGenre = filteredByGenre
+    , genres = Set.toList genres
+    , viewOptions = { currentGenre = "Classical" }
+    }
 
 
 initDict : Set.Set comparable -> (comparable -> a) -> Dict comparable a
@@ -185,7 +238,7 @@ view model =
     }
 
 
-viewBody : Model -> Html msg
+viewBody : Model -> Html Msg
 viewBody model =
     case model of
         Failure err ->
@@ -194,25 +247,37 @@ viewBody model =
         Loading ->
             text "Loading..."
 
-        Success catalogue ->
+        Success state ->
             div []
-                (catalogue.byGenre
-                    |> Dict.get "Classical"
-                    |> Maybe.withDefault Dict.empty
-                    |> Dict.toList
-                    |> List.map displayArtist
+                (displayGenres state
+                    :: (state.byGenre
+                            |> Dict.get state.viewOptions.currentGenre
+                            |> Maybe.withDefault Dict.empty
+                            |> Dict.toList
+                            |> List.map displayArtist
+                       )
                 )
 
 
-displayArtist : ( Artist, List Album ) -> Html msg
+displayGenres : State -> Html Msg
+displayGenres state =
+    let
+        displayGenre : Genre -> Html Msg
+        displayGenre g =
+            a [ onClick (SetGenre g) ] [ text (g ++ " ") ]
+    in
+    div [] (List.map displayGenre state.genres)
+
+
+displayArtist : ( Artist, List Album ) -> Html Msg
 displayArtist ( artist, albums ) =
     div []
-        [ text artist
+        [ a [ id artist ] [ text artist ]
         , div [] (List.map displayAlbum albums)
         ]
 
 
-displayAlbum : Album -> Html msg
+displayAlbum : Album -> Html Msg
 displayAlbum album =
     div []
         [ a [ href ("spotify:album:" ++ album.spotify) ]
