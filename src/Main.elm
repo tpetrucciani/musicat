@@ -3,7 +3,7 @@ module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, vie
 import Browser
 import Dict exposing (Dict)
 import Html exposing (Html, a, div, img, input, text)
-import Html.Attributes exposing (href, id, placeholder, src, value)
+import Html.Attributes exposing (class, href, id, placeholder, src, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, list, map, map2, map4, string)
@@ -91,7 +91,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( Loading
     , Http.get
-        { url = "/_data/catalogue"
+        { url = "/data/catalogue"
         , expect = Http.expectJson GotCatalogue catalogueDecoder
         }
     )
@@ -322,7 +322,7 @@ displayArtist state ( artist, albums ) =
 
 displayAlbum : Album -> Html Msg
 displayAlbum album =
-    div []
+    div [ class "album" ]
         [ a [ href ("spotify:album:" ++ album.spotify) ]
-            [ img [ src ("_data/covers/" ++ album.cover) ] [] ]
+            [ img [ src ("data/covers/" ++ album.cover) ] [] ]
         ]
