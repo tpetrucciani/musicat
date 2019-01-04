@@ -2,12 +2,13 @@ module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, vie
 
 import Browser
 import Dict exposing (Dict)
-import Html exposing (Html, a, div, img, text)
-import Html.Attributes exposing (href, id, src)
-import Html.Events exposing (onClick)
+import Html exposing (Html, a, div, img, input, text)
+import Html.Attributes exposing (href, id, placeholder, src, value)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, list, map, map2, map4, string)
 import Set
+import String.Normalize
 
 
 
@@ -82,6 +83,7 @@ type alias CommentString =
 
 type alias ViewOptions =
     { currentGenre : Genre
+    , searchField : String
     }
 
 
@@ -121,6 +123,7 @@ entryDecoder =
 type Msg
     = GotCatalogue (Result Http.Error Catalogue)
     | SetGenre Genre
+    | ChangeFilter String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -154,6 +157,19 @@ update msg model =
 
                         newViewOptions =
                             { oldViewOptions | currentGenre = genre }
+
+                        newState =
+                            { state | viewOptions = newViewOptions }
+                    in
+                    ( Success newState, Cmd.none )
+
+                ChangeFilter filter ->
+                    let
+                        oldViewOptions =
+                            state.viewOptions
+
+                        newViewOptions =
+                            { oldViewOptions | searchField = filter }
 
                         newState =
                             { state | viewOptions = newViewOptions }
@@ -209,7 +225,7 @@ makeState catalogue =
     { catalogue = catalogue
     , byGenre = filteredByGenre
     , genres = Set.toList genres
-    , viewOptions = { currentGenre = "Classical" }
+    , viewOptions = { currentGenre = "Classical", searchField = "" }
     }
 
 
@@ -250,11 +266,12 @@ viewBody model =
         Success state ->
             div []
                 (displayGenres state
+                    :: displaySearchBar state
                     :: (state.byGenre
                             |> Dict.get state.viewOptions.currentGenre
                             |> Maybe.withDefault Dict.empty
                             |> Dict.toList
-                            |> List.map displayArtist
+                            |> List.map (displayArtist state)
                        )
                 )
 
@@ -269,12 +286,38 @@ displayGenres state =
     div [] (List.map displayGenre state.genres)
 
 
-displayArtist : ( Artist, List Album ) -> Html Msg
-displayArtist ( artist, albums ) =
+displaySearchBar : State -> Html Msg
+displaySearchBar state =
     div []
-        [ a [ id artist ] [ text artist ]
-        , div [] (List.map displayAlbum albums)
+        [ input
+            [ placeholder "Filter"
+            , value state.viewOptions.searchField
+            , onInput ChangeFilter
+            ]
+            []
         ]
+
+
+displayArtist : State -> ( Artist, List Album ) -> Html Msg
+displayArtist state ( artist, albums ) =
+    let
+        normalizedArtist =
+            String.toLower (String.Normalize.removeDiacritics artist)
+
+        contents =
+            if
+                String.startsWith
+                    (String.toLower state.viewOptions.searchField)
+                    normalizedArtist
+            then
+                [ a [ id artist ] [ text artist ]
+                , div [] (List.map displayAlbum albums)
+                ]
+
+            else
+                []
+    in
+    div [] contents
 
 
 displayAlbum : Album -> Html Msg
