@@ -6,7 +6,7 @@ import Html exposing (Html, a, div, img, input, text)
 import Html.Attributes exposing (class, href, id, placeholder, src, value)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, field, list, map, map2, map4, string)
+import Json.Decode exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
 import Set
 import String.Normalize
 
@@ -36,8 +36,8 @@ type Model
 
 type alias State =
     { catalogue : Catalogue
-    , byGenre : Dict Genre (Dict Artist (List Album))
     , genres : List Genre
+    , albumsByGenre : Dict Genre (Dict Artist (List Album))
     , viewOptions : ViewOptions
     }
 
@@ -49,8 +49,12 @@ type alias Catalogue =
 
 type alias Album =
     { cover : CoverPath
-    , spotify : SpotifyId
     , entries : List Entry
+    , spotify : Maybe SpotifyId
+    , qobuz : Maybe QobuzId
+    , local : Bool
+    , archived : Bool
+    , booklet : Maybe BookletPath
     , comment : CommentString
     }
 
@@ -65,7 +69,15 @@ type alias CoverPath =
     String
 
 
+type alias BookletPath =
+    String
+
+
 type alias SpotifyId =
+    String
+
+
+type alias QobuzId =
     String
 
 
@@ -84,6 +96,7 @@ type alias CommentString =
 type alias ViewOptions =
     { currentGenre : Genre
     , searchField : String
+    , filterFunction : String -> Bool
     }
 
 
@@ -104,10 +117,14 @@ catalogueDecoder =
 
 albumDecoder : Decoder Album
 albumDecoder =
-    map4 Album
+    map8 Album
         (field "cover" string)
-        (field "spotify" string)
         (field "entries" (list entryDecoder))
+        (maybe (field "spotify" string))
+        (maybe (field "qobuz" string))
+        (oneOf [ field "local" bool, succeed False ])
+        (oneOf [ field "archived" bool, succeed False ])
+        (maybe (field "booklet" string))
         (field "comment" string)
 
 
@@ -122,7 +139,11 @@ entryDecoder =
 
 type Msg
     = GotCatalogue (Result Http.Error Catalogue)
-    | SetGenre Genre
+    | SetView SetViewMsg
+
+
+type SetViewMsg
+    = SetGenre Genre
     | ChangeFilter String
 
 
@@ -150,26 +171,10 @@ update msg model =
 
         Success state ->
             case msg of
-                SetGenre genre ->
+                SetView viewMsg ->
                     let
-                        oldViewOptions =
-                            state.viewOptions
-
                         newViewOptions =
-                            { oldViewOptions | currentGenre = genre }
-
-                        newState =
-                            { state | viewOptions = newViewOptions }
-                    in
-                    ( Success newState, Cmd.none )
-
-                ChangeFilter filter ->
-                    let
-                        oldViewOptions =
-                            state.viewOptions
-
-                        newViewOptions =
-                            { oldViewOptions | searchField = filter }
+                            setView viewMsg state.viewOptions
 
                         newState =
                             { state | viewOptions = newViewOptions }
@@ -178,6 +183,37 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+
+setView : SetViewMsg -> ViewOptions -> ViewOptions
+setView viewMsg viewOptions =
+    case viewMsg of
+        SetGenre genre ->
+            { viewOptions | currentGenre = genre }
+
+        ChangeFilter filter ->
+            { viewOptions
+                | searchField = filter
+                , filterFunction = makeFilterFunction filter
+            }
+
+
+makeFilterFunction : String -> (String -> Bool)
+makeFilterFunction searchField =
+    if String.isEmpty searchField then
+        \s -> True
+
+    else
+        let
+            normalized =
+                String.toLower (String.Normalize.removeDiacritics searchField)
+        in
+        \s ->
+            let
+                ss =
+                    String.toLower (String.Normalize.removeDiacritics s)
+            in
+            String.startsWith normalized ss
 
 
 makeState : Catalogue -> State
@@ -210,11 +246,11 @@ makeState catalogue =
         dictForGenre g =
             initDict artists (albumsForGenreArtist g)
 
-        byGenre =
+        albumsByGenre =
             initDict genres dictForGenre
 
         filteredByGenre =
-            byGenre
+            albumsByGenre
                 |> Dict.map
                     (\genre albumsByArtist ->
                         Dict.filter
@@ -223,9 +259,9 @@ makeState catalogue =
                     )
     in
     { catalogue = catalogue
-    , byGenre = filteredByGenre
     , genres = Set.toList genres
-    , viewOptions = { currentGenre = "Classical", searchField = "" }
+    , albumsByGenre = filteredByGenre
+    , viewOptions = { currentGenre = "Classical", searchField = "", filterFunction = \s -> True }
     }
 
 
@@ -267,7 +303,7 @@ viewBody model =
             div []
                 (displayGenres state
                     :: displaySearchBar state
-                    :: (state.byGenre
+                    :: (state.albumsByGenre
                             |> Dict.get state.viewOptions.currentGenre
                             |> Maybe.withDefault Dict.empty
                             |> Dict.toList
@@ -281,7 +317,7 @@ displayGenres state =
     let
         displayGenre : Genre -> Html Msg
         displayGenre g =
-            a [ onClick (SetGenre g) ] [ text (g ++ " ") ]
+            a [ onClick (SetView (SetGenre g)) ] [ text (g ++ " ") ]
     in
     div [] (List.map displayGenre state.genres)
 
@@ -292,7 +328,9 @@ displaySearchBar state =
         [ input
             [ placeholder "Filter"
             , value state.viewOptions.searchField
-            , onInput ChangeFilter
+            , onInput (SetView << ChangeFilter)
+            , Html.Attributes.autofocus True
+            , Html.Attributes.type_ "search"
             ]
             []
         ]
@@ -301,15 +339,8 @@ displaySearchBar state =
 displayArtist : State -> ( Artist, List Album ) -> Html Msg
 displayArtist state ( artist, albums ) =
     let
-        normalizedArtist =
-            String.toLower (String.Normalize.removeDiacritics artist)
-
         contents =
-            if
-                String.startsWith
-                    (String.toLower state.viewOptions.searchField)
-                    normalizedArtist
-            then
+            if state.viewOptions.filterFunction artist then
                 [ a [ id artist ] [ text artist ]
                 , div [] (List.map displayAlbum albums)
                 ]
@@ -323,6 +354,10 @@ displayArtist state ( artist, albums ) =
 displayAlbum : Album -> Html Msg
 displayAlbum album =
     div [ class "album" ]
-        [ a [ href ("spotify:album:" ++ album.spotify) ]
-            [ img [ src ("data/covers/" ++ album.cover) ] [] ]
+        [ img
+            [ src ("data/covers/" ++ album.cover)
+            , Html.Attributes.width 200
+            , Html.Attributes.height 200
+            ]
+            []
         ]

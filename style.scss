@@ -30,7 +30,6 @@ body {
 }
 
 img {
-  width: 200px;
 }
 
 div {
@@ -39,6 +38,5 @@ div {
 
 .album {
   background-color: darken($syntax-bg, 36%);
-  padding: 1px 1px 10px 1px;
-  width: 200px;
+  margin: 1px 1px 10px 1px;
 }
