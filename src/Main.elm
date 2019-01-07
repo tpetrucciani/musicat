@@ -301,15 +301,16 @@ viewBody model =
 
         Success state ->
             div []
-                (displayGenres state
-                    :: displaySearchBar state
-                    :: (state.albumsByGenre
-                            |> Dict.get state.viewOptions.currentGenre
-                            |> Maybe.withDefault Dict.empty
-                            |> Dict.toList
-                            |> List.map (displayArtist state)
-                       )
-                )
+                [ Html.header [] [ displayGenres state, displaySearchBar state ]
+                , Html.main_ []
+                    (state.albumsByGenre
+                        |> Dict.get state.viewOptions.currentGenre
+                        |> Maybe.withDefault Dict.empty
+                        |> Dict.toList
+                        |> List.map (displayArtist state)
+                    )
+                , Html.footer [] []
+                ]
 
 
 displayGenres : State -> Html Msg
@@ -341,23 +342,28 @@ displayArtist state ( artist, albums ) =
     let
         contents =
             if state.viewOptions.filterFunction artist then
-                [ a [ id artist ] [ text artist ]
+                [ a [ class "artist-name", id artist ] [ text artist ]
                 , div [] (List.map displayAlbum albums)
                 ]
 
             else
                 []
     in
-    div [] contents
+    div [ class "artist" ] contents
 
 
 displayAlbum : Album -> Html Msg
 displayAlbum album =
-    div [ class "album" ]
+    div
+        [ class "album"
+        ]
         [ img
             [ src ("data/covers/" ++ album.cover)
             , Html.Attributes.width 200
             , Html.Attributes.height 200
             ]
             []
+        , div [ class "icon" ]
+            [ Html.span [ class "fab fa-spotify" ] []
+            ]
         ]

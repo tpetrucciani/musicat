@@ -25,18 +25,96 @@ $syntax-gutter: darken($syntax-bg, 36%);
 $syntax-guide:  fade($syntax-fg, 20%);
 $syntax-accent: hsl($syntax-hue, 100%, 66% );
 
+$border-color: darken($syntax-bg, 36%);
+$icon-color: lighten($syntax-fg, 20%);
+
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: normal;
+  src: url(resources/SourceSansPro-Regular.otf.woff);
+}
+
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: 300;
+  src: url(resources/SourceSansPro-Light.otf.woff);
+}
+
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: 800;
+  src: url(resources/SourceSansPro-Black.otf.woff);
+}
+
 body {
   background-color: darken($syntax-bg, 16%);
+  font-family: SourceSansPro, sans-serif;
+}
+
+header {
+  border-bottom: 1px solid $border-color;
+  font-weight: normal;
+  height: 80px;
+  margin-bottom: 40px;
+}
+
+main {
+  margin: 0 10px;
+}
+
+footer {
+  border-top: 1px solid $border-color;
+  clear: both;
+  margin-top: 40px;
+  height: 80px;
 }
 
 img {
+  color: darken($syntax-bg, 36%);
+  margin: 0;
+  padding: 1px;
 }
 
-div {
+.artist {
   float: left;
+  margin: 0 35px 0 0;
+}
+
+.artist:last-child {
+  margin: 0 35px 27px 0;
 }
 
 .album {
-  background-color: darken($syntax-bg, 36%);
-  margin: 1px 1px 10px 1px;
+  float: left;
+  margin: 0 15px 15px 0;
+  position: relative;
+}
+
+.artist-name {
+  color: $hue-5-2;
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.icon {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    height: 20px;
+}
+// .icon:before {
+//    content: '';
+//    display: inline-block;
+//    height: 100%;
+//    vertical-align: middle;
+// }
+
+.icon {
+  color: $icon-color;
+  font-feature-settings: "c2sc", "smcp";
+  font-size: 18px;
+  font-weight: 800;
+  // -webkit-text-fill-color: white;
+  // -webkit-text-stroke-width: 1px;
+  // -webkit-text-stroke-color: red;
 }
