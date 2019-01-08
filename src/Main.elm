@@ -7,6 +7,7 @@ import Html.Attributes exposing (class, href, id, placeholder, src, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
+import NaturalOrdering
 import Set
 import String.Normalize
 
@@ -37,7 +38,7 @@ type Model
 type alias State =
     { catalogue : Catalogue
     , genres : List Genre
-    , albumsByGenre : Dict Genre (Dict Artist (List Album))
+    , albumsByGenre : Dict Genre (List ( Artist, List Album ))
     , viewOptions : ViewOptions
     }
 
@@ -94,9 +95,8 @@ type alias CommentString =
 
 
 type alias ViewOptions =
-    { currentGenre : Genre
-    , searchField : String
-    , filterFunction : String -> Bool
+    { genre : Genre
+    , filter : String
     }
 
 
@@ -189,31 +189,10 @@ setView : SetViewMsg -> ViewOptions -> ViewOptions
 setView viewMsg viewOptions =
     case viewMsg of
         SetGenre genre ->
-            { viewOptions | currentGenre = genre }
+            { viewOptions | genre = genre }
 
         ChangeFilter filter ->
-            { viewOptions
-                | searchField = filter
-                , filterFunction = makeFilterFunction filter
-            }
-
-
-makeFilterFunction : String -> (String -> Bool)
-makeFilterFunction searchField =
-    if String.isEmpty searchField then
-        \s -> True
-
-    else
-        let
-            normalized =
-                String.toLower (String.Normalize.removeDiacritics searchField)
-        in
-        \s ->
-            let
-                ss =
-                    String.toLower (String.Normalize.removeDiacritics s)
-            in
-            String.startsWith normalized ss
+            { viewOptions | filter = filter }
 
 
 makeState : Catalogue -> State
@@ -237,31 +216,34 @@ makeState catalogue =
 
         artists =
             getField .artist
+                |> Set.toList
+                |> List.sortWith NaturalOrdering.compare
 
         albumsForGenreArtist g a =
             entries
                 |> List.filter (\e -> e.genre == g && e.artist == a)
                 |> List.map .album
 
-        dictForGenre g =
-            initDict artists (albumsForGenreArtist g)
+        listForGenre g =
+            artists
+                |> List.map (\a -> ( a, albumsForGenreArtist g a ))
 
         albumsByGenre =
-            initDict genres dictForGenre
+            initDict genres listForGenre
 
         filteredByGenre =
             albumsByGenre
                 |> Dict.map
                     (\genre albumsByArtist ->
-                        Dict.filter
-                            (\_ albums -> not (List.isEmpty albums))
+                        List.filter
+                            (\( _, albums ) -> not (List.isEmpty albums))
                             albumsByArtist
                     )
     in
     { catalogue = catalogue
     , genres = Set.toList genres
     , albumsByGenre = filteredByGenre
-    , viewOptions = { currentGenre = "Classical", searchField = "", filterFunction = \s -> True }
+    , viewOptions = { genre = "Classical", filter = "" }
     }
 
 
@@ -286,31 +268,61 @@ subscriptions model =
 view : Model -> Browser.Document Msg
 view model =
     { title = "Album catalogue"
-    , body = [ viewBody model ]
+    , body = viewBody model
     }
 
 
-viewBody : Model -> Html Msg
+viewBody : Model -> List (Html Msg)
 viewBody model =
     case model of
         Failure err ->
-            text err
+            [ text err ]
 
         Loading ->
-            text "Loading..."
+            [ text "Loading..." ]
 
         Success state ->
-            div []
-                [ Html.header [] [ displayGenres state, displaySearchBar state ]
-                , Html.main_ []
-                    (state.albumsByGenre
-                        |> Dict.get state.viewOptions.currentGenre
-                        |> Maybe.withDefault Dict.empty
-                        |> Dict.toList
-                        |> List.map (displayArtist state)
-                    )
-                , Html.footer [] []
-                ]
+            [ Html.header [] [ displayGenres state, displaySearchBar state ]
+            , Html.main_ []
+                (List.map displayArtist (getVisibleAlbumsByArtist state))
+            , Html.footer [] []
+            ]
+
+
+getVisibleAlbumsByArtist : State -> List ( Artist, List Album )
+getVisibleAlbumsByArtist state =
+    Dict.get state.viewOptions.genre state.albumsByGenre
+        |> Maybe.withDefault []
+        |> List.filter (makeArtistFilter state.viewOptions)
+        |> List.map
+            (\( a, albums ) ->
+                ( a, List.filter (makeAlbumFilter state.viewOptions) albums )
+            )
+        |> List.filter (\(_, albums) -> not (List.isEmpty albums))
+
+
+makeArtistFilter : ViewOptions -> (( Artist, List Album ) -> Bool)
+makeArtistFilter viewOptions =
+    if String.isEmpty viewOptions.filter then
+        always True
+
+    else
+        let
+            normalized =
+                String.toLower
+                    (String.Normalize.removeDiacritics viewOptions.filter)
+        in
+        \( a, _ ) ->
+            let
+                aa =
+                    String.toLower (String.Normalize.removeDiacritics a)
+            in
+            String.startsWith normalized aa
+
+
+makeAlbumFilter : ViewOptions -> (Album -> Bool)
+makeAlbumFilter viewOptions =
+    always True
 
 
 displayGenres : State -> Html Msg
@@ -328,7 +340,7 @@ displaySearchBar state =
     div []
         [ input
             [ placeholder "Filter"
-            , value state.viewOptions.searchField
+            , value state.viewOptions.filter
             , onInput (SetView << ChangeFilter)
             , Html.Attributes.autofocus True
             , Html.Attributes.type_ "search"
@@ -337,17 +349,13 @@ displaySearchBar state =
         ]
 
 
-displayArtist : State -> ( Artist, List Album ) -> Html Msg
-displayArtist state ( artist, albums ) =
+displayArtist : ( Artist, List Album ) -> Html Msg
+displayArtist ( artist, albums ) =
     let
         contents =
-            if state.viewOptions.filterFunction artist then
-                [ a [ class "artist-name", id artist ] [ text artist ]
-                , div [] (List.map displayAlbum albums)
-                ]
-
-            else
-                []
+            [ a [ class "artist-name", id artist ] [ text artist ]
+            , div [] (List.map displayAlbum albums)
+            ]
     in
     div [ class "artist" ] contents
 
@@ -364,6 +372,7 @@ displayAlbum album =
             ]
             []
         , div [ class "icon" ] [] -- [ text "a" ]
-            -- [ Html.span [ class "fab fa-spotify" ] []
-            -- ]
+
+        -- [ Html.span [ class "fab fa-spotify" ] []
+        -- ]
         ]
