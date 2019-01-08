@@ -59,12 +59,13 @@ header {
 }
 
 main {
+  display: flex;
+  flex-flow: row wrap;
   margin: 0 10px;
 }
 
 footer {
   border-top: 1px solid $border-color;
-  clear: both;
   margin-top: 40px;
   height: 80px;
 }
@@ -76,16 +77,18 @@ img {
 }
 
 .artist {
-  float: left;
+  // display: inline;
+  // float: left;
   margin: 0 35px 0 0;
 }
 
-.artist:last-child {
-  margin: 0 35px 27px 0;
-}
+// .artist:last-child {
+//   margin: 0 35px 27px 0;
+// }
 
 .album {
-  float: left;
+  display: inline;
+  // float: left;
   margin: 0 15px 15px 0;
   position: relative;
 }
@@ -97,10 +100,12 @@ img {
 }
 
 .icon {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    height: 20px;
+  background-color: red;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  height: 20px;
+  width: inherit;
 }
 // .icon:before {
 //    content: '';

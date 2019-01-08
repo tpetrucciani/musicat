@@ -363,7 +363,7 @@ displayAlbum album =
             , Html.Attributes.height 200
             ]
             []
-        , div [ class "icon" ]
-            [ Html.span [ class "fab fa-spotify" ] []
-            ]
+        , div [ class "icon" ] [] -- [ text "a" ]
+            -- [ Html.span [ class "fab fa-spotify" ] []
+            -- ]
         ]
