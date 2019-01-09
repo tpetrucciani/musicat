@@ -330,7 +330,12 @@ viewBody model =
             [ text "Loading..." ]
 
         Success state ->
-            [ Html.header [] [ displayGenres state, displaySearchBar state ]
+            [ Html.header []
+                [ displayGenres state
+                , displaySearchBar state
+                , displayArchiveVisibilitySelector state
+                , displaySourceVisibilitySelector state
+                ]
             , Html.main_ []
                 (List.map displayArtist (getVisibleAlbumsByArtist state))
             , Html.footer [] []
@@ -439,6 +444,77 @@ displaySearchBar state =
         ]
 
 
+displayArchiveVisibilitySelector : State -> Html Msg
+displayArchiveVisibilitySelector state =
+    div []
+        [ Html.fieldset []
+            [ radio (SetView <| ChangeArchiveVisibility OnlyUnarchived)
+                "Only unarchived"
+                (state.viewOptions.archiveVisibility == OnlyUnarchived)
+            , radio (SetView <| ChangeArchiveVisibility OnlyArchived)
+                "Only archived"
+                (state.viewOptions.archiveVisibility == OnlyArchived)
+            , radio (SetView <| ChangeArchiveVisibility Both)
+                "Both"
+                (state.viewOptions.archiveVisibility == Both)
+            ]
+        ]
+
+
+displaySourceVisibilitySelector : State -> Html Msg
+displaySourceVisibilitySelector state =
+    let
+        source2checkbox s =
+            checkbox
+                (SetView <| ToggleSourceVisibility s)
+                (sourceName s)
+                (List.member s state.viewOptions.visibleSources)
+
+        checkboxes =
+            List.map source2checkbox [ Local, Spotify, Qobuz, Missing ]
+    in
+    div [] [ Html.fieldset [] checkboxes ]
+
+
+sourceName : Source -> String
+sourceName source =
+    case source of
+        Local ->
+            "Local"
+
+        Spotify ->
+            "Spotify"
+
+        Qobuz ->
+            "Qobuz"
+
+        Missing ->
+            "Missing"
+
+
+box : String -> msg -> String -> Bool -> Html msg
+box type_ msg name isChecked =
+    Html.label []
+        [ input
+            [ Html.Attributes.type_ type_
+            , Html.Attributes.checked isChecked
+            , onClick msg
+            ]
+            []
+        , text name
+        ]
+
+
+radio : msg -> String -> Bool -> Html msg
+radio =
+    box "radio"
+
+
+checkbox : msg -> String -> Bool -> Html msg
+checkbox =
+    box "checkbox"
+
+
 displayArtist : ( Artist, List Album ) -> Html Msg
 displayArtist ( artist, albums ) =
     let
@@ -461,8 +537,5 @@ displayAlbum album =
             , Html.Attributes.height 200
             ]
             []
-        , div [ class "icon" ] [] -- [ text "a" ]
-
-        -- [ Html.span [ class "fab fa-spotify" ] []
-        -- ]
+        , div [ class "icon" ] []
         ]
