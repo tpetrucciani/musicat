@@ -8,7 +8,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
 import NaturalOrdering
-import Set
+import Set exposing (Set)
 import String.Normalize
 
 
@@ -44,8 +44,13 @@ type alias State =
 
 
 type alias Catalogue =
-    { albums : List Album
+    { config : Config
+    , albums : List Album
     }
+
+
+type alias Config =
+    { selectedGenre : Genre }
 
 
 type alias Album =
@@ -97,7 +102,22 @@ type alias CommentString =
 type alias ViewOptions =
     { genre : Genre
     , filter : String
+    , archiveVisibility : ArchiveVisibility
+    , visibleSources : List Source
     }
+
+
+type ArchiveVisibility
+    = OnlyUnarchived
+    | OnlyArchived
+    | Both
+
+
+type Source
+    = Local
+    | Spotify
+    | Qobuz
+    | Missing
 
 
 init : () -> ( Model, Cmd Msg )
@@ -112,7 +132,14 @@ init _ =
 
 catalogueDecoder : Decoder Catalogue
 catalogueDecoder =
-    map Catalogue (field "albums" (list albumDecoder))
+    map2 Catalogue
+        (field "config" configDecoder)
+        (field "albums" (list albumDecoder))
+
+
+configDecoder : Decoder Config
+configDecoder =
+    map Config (field "selectedGenre" string)
 
 
 albumDecoder : Decoder Album
@@ -145,6 +172,8 @@ type Msg
 type SetViewMsg
     = SetGenre Genre
     | ChangeFilter String
+    | ChangeArchiveVisibility ArchiveVisibility
+    | ToggleSourceVisibility Source
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -193,6 +222,20 @@ setView viewMsg viewOptions =
 
         ChangeFilter filter ->
             { viewOptions | filter = filter }
+
+        ChangeArchiveVisibility archiveVisibility ->
+            { viewOptions | archiveVisibility = archiveVisibility }
+
+        ToggleSourceVisibility source ->
+            let
+                newVisibleSources =
+                    if List.member source viewOptions.visibleSources then
+                        List.filter ((/=) source) viewOptions.visibleSources
+
+                    else
+                        source :: viewOptions.visibleSources
+            in
+            { viewOptions | visibleSources = newVisibleSources }
 
 
 makeState : Catalogue -> State
@@ -243,7 +286,12 @@ makeState catalogue =
     { catalogue = catalogue
     , genres = Set.toList genres
     , albumsByGenre = filteredByGenre
-    , viewOptions = { genre = "Classical", filter = "" }
+    , viewOptions =
+        { genre = catalogue.config.selectedGenre
+        , filter = ""
+        , archiveVisibility = OnlyUnarchived
+        , visibleSources = [ Local, Spotify, Qobuz, Missing ]
+        }
     }
 
 
@@ -298,7 +346,7 @@ getVisibleAlbumsByArtist state =
             (\( a, albums ) ->
                 ( a, List.filter (makeAlbumFilter state.viewOptions) albums )
             )
-        |> List.filter (\(_, albums) -> not (List.isEmpty albums))
+        |> List.filter (\( _, albums ) -> not (List.isEmpty albums))
 
 
 makeArtistFilter : ViewOptions -> (( Artist, List Album ) -> Bool)
@@ -321,8 +369,50 @@ makeArtistFilter viewOptions =
 
 
 makeAlbumFilter : ViewOptions -> (Album -> Bool)
-makeAlbumFilter viewOptions =
-    always True
+makeAlbumFilter viewOptions album =
+    matchesArchiveVisibility album viewOptions.archiveVisibility
+        && List.any (matchesSourceVisibility album) viewOptions.visibleSources
+
+
+matchesArchiveVisibility : Album -> ArchiveVisibility -> Bool
+matchesArchiveVisibility album archiveVisibility =
+    case archiveVisibility of
+        OnlyUnarchived ->
+            not album.archived
+
+        OnlyArchived ->
+            album.archived
+
+        Both ->
+            True
+
+
+matchesSourceVisibility : Album -> Source -> Bool
+matchesSourceVisibility album source =
+    case source of
+        Local ->
+            album.local
+
+        Spotify ->
+            isSome album.spotify
+
+        Qobuz ->
+            isSome album.qobuz
+
+        Missing ->
+            not album.local
+                && not (isSome album.spotify)
+                && not (isSome album.qobuz)
+
+
+isSome : Maybe a -> Bool
+isSome x =
+    case x of
+        Just _ ->
+            True
+
+        Nothing ->
+            False
 
 
 displayGenres : State -> Html Msg
