@@ -25,6 +25,7 @@ $syntax-gutter: darken($syntax-bg, 36%);
 $syntax-guide:  fade($syntax-fg, 20%);
 $syntax-accent: hsl($syntax-hue, 100%, 66% );
 
+$background-color: darken($syntax-bg, 16%);
 $border-color: darken($syntax-bg, 36%);
 $icon-color: lighten($syntax-fg, 20%);
 
@@ -47,7 +48,7 @@ $icon-color: lighten($syntax-fg, 20%);
 }
 
 body {
-  background-color: darken($syntax-bg, 16%);
+  background-color: $background-color;
   font-family: SourceSansPro, sans-serif;
 }
 
@@ -71,9 +72,10 @@ footer {
 }
 
 img {
-  color: darken($syntax-bg, 36%);
+  background-color: darken($syntax-bg, 36%);
   margin: 0;
   padding: 1px;
+  // TODO change to use border
 }
 
 .artist {
@@ -87,7 +89,7 @@ img {
 // }
 
 .album {
-  display: inline;
+  display: inline-block;
   // float: left;
   margin: 0 15px 15px 0;
   position: relative;
@@ -99,27 +101,55 @@ img {
   font-weight: 300;
 }
 
-.icon {
-  background-color: red;
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  height: 20px;
-  width: inherit;
+.album:hover .icon-bar {
+  display: block;
 }
-// .icon:before {
-//    content: '';
-//    display: inline-block;
-//    height: 100%;
-//    vertical-align: middle;
-// }
 
-.icon {
+.icon-bar {
+  display: none;
+  background-color: fade-out(darken($syntax-bg, 36%), 0.15);
+  position: absolute;
+  bottom: 3px;
+  height: 20px;
+  padding: 5px 0;
+  width: 100%;
   color: $icon-color;
   font-feature-settings: "c2sc", "smcp";
   font-size: 18px;
   font-weight: 800;
-  // -webkit-text-fill-color: white;
-  // -webkit-text-stroke-width: 1px;
-  // -webkit-text-stroke-color: red;
+}
+
+.icon-bar a:first-child {
+  margin-left: 5px;
+}
+
+.icon {
+  border-radius: 30%;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  max-height: 18px;
+  text-align: center;
+  margin-left: 5px;
+  display: inline-block;
+  border: 1px solid darken($syntax-bg, 36%);
+}
+
+.icon-local {
+  background-color: $hue-6;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.icon-spotify {
+  background-color: #00c358;
+}
+
+.icon-qobuz {
+  background-color: #0f60f3;
+}
+
+.icon-archived {
+  background-color: $hue-3;
 }

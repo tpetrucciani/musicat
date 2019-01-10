@@ -3,7 +3,7 @@ module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, vie
 import Browser
 import Dict exposing (Dict)
 import Html exposing (Html, a, div, img, input, text)
-import Html.Attributes exposing (class, href, id, placeholder, src, value)
+import Html.Attributes exposing (class, href, id, placeholder, src, title, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
@@ -537,5 +537,41 @@ displayAlbum album =
             , Html.Attributes.height 200
             ]
             []
-        , div [ class "icon" ] []
+        , div [ class "icon-bar" ] (putIcons album)
         ]
+
+
+putIcons : Album -> List (Html Msg)
+putIcons album =
+    (if album.local then
+        [ a [ title "Local" ] [ div [ class "icon-local", class "icon" ] [] ] ]
+
+     else
+        []
+    )
+        ++ (case album.spotify of
+                Just id ->
+                    [ a [ title "Spotify", href ("spotify:album:" ++ id) ]
+                        [ div [ class "icon-spotify", class "icon" ] [] ]
+                    ]
+
+                Nothing ->
+                    []
+           )
+        ++ (case album.qobuz of
+                Just id ->
+                    [ a [ title "Qobuz", href ("qobuzapp://album/" ++ id) ]
+                        [ div [ class "icon-qobuz", class "icon" ] [] ]
+                    ]
+
+                Nothing ->
+                    []
+           )
+        ++ (if album.archived then
+                [ a [ title "Archived" ]
+                    [ div [ class "icon-archived", class "icon" ] [] ]
+                ]
+
+            else
+                []
+           )
