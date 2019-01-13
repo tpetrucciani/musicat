@@ -1,38 +1,47 @@
-// Colors from Atom One light syntax theme
+// Colors (from the Atom One themes)
 
-$syntax-hue:          230;
-$syntax-saturation:    1%;
-$syntax-brightness:   98%;
+$syntax-hue:          220;
+$syntax-saturation:   13%;
+$syntax-brightness:   18%;
 
-$mono-1: hsl($syntax-hue, 8%, 24%);
-$mono-2: hsl($syntax-hue, 6%, 44%);
-$mono-3: hsl($syntax-hue, 4%, 64%);
+$grey-darkest:  hsl($syntax-hue, $syntax-saturation, $syntax-brightness);
+$grey-dark:     hsl($syntax-hue,  8%, 24%);
+$grey-light:    hsl($syntax-hue, 10%, 40%);
+$grey-lightest: hsl($syntax-hue, 14%, 71%);
 
-$hue-1:   hsl(198, 99%, 37%); // <-cyan
-$hue-2:   hsl(221, 87%, 60%); // <-blue
-$hue-3:   hsl(301, 63%, 40%); // <-purple
-$hue-4:   hsl(119, 34%, 47%); // <-green
+$blue:   hsl(207, 82%, 66%);
+$purple: hsl(286, 60%, 67%);
+$green:  hsl( 95, 38%, 62%);
+$red:    hsl(355, 65%, 65%);
+$orange: hsl( 41, 99%, 38%);
 
-$hue-5:   hsl(  5, 74%, 59%); // <-red 1
-$hue-5-2: hsl(344, 84%, 43%); // <-red 2
+$background-color: $grey-darkest;
+$main-text-color: $grey-lightest;
+$main-border-color: $grey-light;
+$image-border-color: $grey-dark;
+$artist-name-color: $orange;
+$icon-bar-background-color: fade-out($background-color, 0.15);
 
-$hue-6:   hsl(41, 99%, 30%); // <-orange 1
-$hue-6-2: hsl(41, 99%, 38%); // <-orange 2
+$icon-local-color:    $red;
+$icon-qobuz-color:    $blue;
+$icon-spotify-color:  $green;
+$icon-booklet-color:  $purple;
+$icon-archived-color: $main-text-color;
 
-$syntax-fg:     $mono-1;
-$syntax-bg:     hsl($syntax-hue, $syntax-saturation, $syntax-brightness);
-$syntax-gutter: darken($syntax-bg, 36%);
-$syntax-guide:  fade($syntax-fg, 20%);
-$syntax-accent: hsl($syntax-hue, 100%, 66% );
-
-$background-color: darken($syntax-bg, 16%);
-$border-color: darken($syntax-bg, 36%);
-$icon-color: lighten($syntax-fg, 20%);
+//
+// Fonts
+//
 
 @font-face {
   font-family: SourceSansPro;
   font-weight: normal;
   src: url(resources/SourceSansPro-Regular.otf.woff);
+}
+
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: 200;
+  src: url(resources/SourceSansPro-ExtraLight.otf.woff);
 }
 
 @font-face {
@@ -43,62 +52,63 @@ $icon-color: lighten($syntax-fg, 20%);
 
 @font-face {
   font-family: SourceSansPro;
-  font-weight: 800;
-  src: url(resources/SourceSansPro-Black.otf.woff);
+  font-weight: 600;
+  src: url(resources/SourceSansPro-Semibold.otf.woff);
 }
 
+//
+// Styles
+//
+
 body {
+  color: $main-text-color;
   background-color: $background-color;
   font-family: SourceSansPro, sans-serif;
+  margin: 8px 0;
 }
 
 header {
-  border-bottom: 1px solid $border-color;
-  font-weight: normal;
-  height: 80px;
-  margin-bottom: 40px;
 }
 
 main {
   display: flex;
   flex-flow: row wrap;
-  margin: 0 10px;
+  margin: 40px 0 0 0;
+  padding: 40px 10px 40px 0;
+  border-top: 1px solid $main-border-color;
+  border-bottom: 1px solid $main-border-color;
 }
 
 footer {
-  border-top: 1px solid $border-color;
-  margin-top: 40px;
   height: 80px;
 }
 
 img {
-  background-color: darken($syntax-bg, 36%);
+  display: block;
   margin: 0;
-  padding: 1px;
-  // TODO change to use border
+  border: 1px solid $image-border-color;
 }
 
 .artist {
-  // display: inline;
-  // float: left;
-  margin: 0 35px 0 0;
+  margin-left: 40px;
+  margin-bottom: 20px;
 }
-
-// .artist:last-child {
-//   margin: 0 35px 27px 0;
-// }
 
 .album {
   display: inline-block;
-  // float: left;
-  margin: 0 15px 15px 0;
+  margin: 0 24px 22px 0;
   position: relative;
 }
 
 .artist-name {
-  color: $hue-5-2;
-  font-size: 24px;
-  font-weight: 300;
+  color: $artist-name-color;
+  font-size: 36px;
+  font-weight: 200;
+  margin-right: 20px;
+}
+
+.album-container {
+  margin-top: 7px;
 }
 
 .album:hover .icon-bar {
@@ -107,49 +117,53 @@ img {
 
 .icon-bar {
   display: none;
-  background-color: fade-out(darken($syntax-bg, 36%), 0.15);
+  background-color: $icon-bar-background-color;
   position: absolute;
-  bottom: 3px;
-  height: 20px;
-  padding: 5px 0;
+  bottom: 0px;
+  height: 22px;
+  padding: 5px 0 2px;
   width: 100%;
-  color: $icon-color;
-  font-feature-settings: "c2sc", "smcp";
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.icon-bar a:first-child {
-  margin-left: 5px;
+  color: $main-text-color;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .icon {
-  border-radius: 30%;
-  width: 18px;
-  height: 18px;
-  min-height: 18px;
-  max-height: 18px;
-  text-align: center;
-  margin-left: 5px;
   display: inline-block;
-  border: 1px solid darken($syntax-bg, 36%);
+  text-transform: lowercase;
+  float: left;
+  margin: 0 0 5px 5px;
+}
+
+.icon > a {
+  text-decoration: none;
+  color: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.icon-local > a, .icon-archived > a {
+  pointer-events: none;
 }
 
 .icon-local {
-  background-color: $hue-6;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: default;
+  color: $icon-local-color;
 }
 
 .icon-spotify {
-  background-color: #00c358;
+  color: $icon-spotify-color;
 }
 
 .icon-qobuz {
-  background-color: #0f60f3;
+  color: $icon-qobuz-color;
+}
+
+.icon-booklet {
+  color: $icon-booklet-color;
 }
 
 .icon-archived {
-  background-color: $hue-3;
+  color: $icon-archived-color;
+  float: right;
+  margin-right: 5px;
 }

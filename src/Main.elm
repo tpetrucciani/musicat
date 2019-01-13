@@ -520,7 +520,7 @@ displayArtist ( artist, albums ) =
     let
         contents =
             [ a [ class "artist-name", id artist ] [ text artist ]
-            , div [] (List.map displayAlbum albums)
+            , div [ class "album-container" ] (List.map displayAlbum albums)
             ]
     in
     div [ class "artist" ] contents
@@ -533,8 +533,8 @@ displayAlbum album =
         ]
         [ img
             [ src ("data/covers/" ++ album.cover)
-            , Html.Attributes.width 200
-            , Html.Attributes.height 200
+            , Html.Attributes.width 220
+            , Html.Attributes.height 220
             ]
             []
         , div [ class "icon-bar" ] (putIcons album)
@@ -543,35 +543,72 @@ displayAlbum album =
 
 putIcons : Album -> List (Html Msg)
 putIcons album =
-    (if album.local then
-        [ a [ title "Local" ] [ div [ class "icon-local", class "icon" ] [] ] ]
-
-     else
-        []
-    )
-        ++ (case album.spotify of
-                Just id ->
-                    [ a [ title "Spotify", href ("spotify:album:" ++ id) ]
-                        [ div [ class "icon-spotify", class "icon" ] [] ]
+    let
+        localIcon =
+            if album.local then
+                [ div [ class "icon", class "icon-local" ]
+                    [ a [ title "The album is available locally" ]
+                        [ text "Local" ]
                     ]
-
-                Nothing ->
-                    []
-           )
-        ++ (case album.qobuz of
-                Just id ->
-                    [ a [ title "Qobuz", href ("qobuzapp://album/" ++ id) ]
-                        [ div [ class "icon-qobuz", class "icon" ] [] ]
-                    ]
-
-                Nothing ->
-                    []
-           )
-        ++ (if album.archived then
-                [ a [ title "Archived" ]
-                    [ div [ class "icon-archived", class "icon" ] [] ]
                 ]
 
             else
                 []
-           )
+
+        qobuzIcon =
+            case album.qobuz of
+                Just id ->
+                    [ div [ class "icon", class "icon-qobuz" ]
+                        [ a
+                            [ title "Show in Qobuz"
+                            , href ("qobuzapp://album/" ++ id)
+                            ]
+                            [ text "Qobuz" ]
+                        ]
+                    ]
+
+                Nothing ->
+                    []
+
+        spotifyIcon =
+            case album.spotify of
+                Just id ->
+                    [ div [ class "icon", class "icon-spotify" ]
+                        [ a
+                            [ title "Show in Spotify"
+                            , href ("spotify:album:" ++ id)
+                            ]
+                            [ text "Spotify" ]
+                        ]
+                    ]
+
+                Nothing ->
+                    []
+
+        bookletIcon =
+            case album.booklet of
+                Just path ->
+                    [ div [ class "icon", class "icon-booklet" ]
+                        [ a
+                            [ title "Show album booklet"
+                            , href ("data/booklets/" ++ path)
+                            ]
+                            [ text "Booklet" ]
+                        ]
+                    ]
+
+                Nothing ->
+                    []
+
+        archivedIcon =
+            if album.archived then
+                [ div [ class "icon", class "icon-archived" ]
+                    [ a [ title "The album is archived" ]
+                        [ text "Archived" ]
+                    ]
+                ]
+
+            else
+                []
+    in
+    List.concat [ localIcon, qobuzIcon, spotifyIcon, bookletIcon, archivedIcon ]
