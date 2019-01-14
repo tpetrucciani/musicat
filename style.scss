@@ -1,10 +1,8 @@
 // Colors (from the Atom One themes)
 
 $syntax-hue:          220;
-$syntax-saturation:   13%;
-$syntax-brightness:   18%;
 
-$grey-darkest:  hsl($syntax-hue, $syntax-saturation, $syntax-brightness);
+$grey-darkest:  hsl($syntax-hue, 13%, 18%);
 $grey-dark:     hsl($syntax-hue,  8%, 24%);
 $grey-light:    hsl($syntax-hue, 10%, 40%);
 $grey-lightest: hsl($syntax-hue, 14%, 71%);
@@ -64,17 +62,18 @@ body {
   color: $main-text-color;
   background-color: $background-color;
   font-family: SourceSansPro, sans-serif;
-  margin: 8px 0;
+  margin: 0;
 }
 
 header {
+  margin: 10px 35px 0 35px;
 }
 
 main {
   display: flex;
   flex-flow: row wrap;
   margin: 40px 0 0 0;
-  padding: 40px 10px 40px 0;
+  padding: 40px 10px 20px 0;
   border-top: 1px solid $main-border-color;
   border-bottom: 1px solid $main-border-color;
 }
@@ -94,21 +93,21 @@ img {
   margin-bottom: 20px;
 }
 
-.album {
-  display: inline-block;
-  margin: 0 24px 22px 0;
-  position: relative;
-}
-
 .artist-name {
   color: $artist-name-color;
   font-size: 36px;
   font-weight: 200;
-  margin-right: 20px;
+  margin: 0 24px 0 0;
 }
 
 .album-container {
-  margin-top: 7px;
+  margin: 8px 0 0 0;
+}
+
+.album {
+  display: inline-block;
+  margin: 0 24px 22px 0;
+  position: relative;
 }
 
 .album:hover .icon-bar {
