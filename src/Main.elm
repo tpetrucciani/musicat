@@ -384,7 +384,10 @@ viewBody model =
                 , displaySourceVisibilitySelector state
                 ]
             , Html.main_ []
-                (List.map displayArtist (getVisibleAlbumsByArtist state))
+                (List.map
+                    (displayArtist state.catalogue)
+                    (getVisibleAlbumsByArtist state)
+                )
             , Html.footer [] []
             ]
 
@@ -562,11 +565,19 @@ checkbox =
     box "checkbox"
 
 
-displayArtist : ( Artist, List Album ) -> Html Msg
-displayArtist ( artist, albums ) =
+artistName : Catalogue -> Artist -> String
+artistName catalogue artist =
+    Dict.get artist catalogue.artists
+        |> Maybe.map .name
+        |> Maybe.withDefault artist
+
+
+displayArtist : Catalogue -> ( Artist, List Album ) -> Html Msg
+displayArtist catalogue ( artist, albums ) =
     let
         contents =
-            [ a [ class "artist-name", id artist ] [ text artist ]
+            [ a [ class "artist-name", id artist ]
+                [ text (artistName catalogue artist) ]
             , div [ class "album-container" ] (List.map displayAlbum albums)
             ]
     in
