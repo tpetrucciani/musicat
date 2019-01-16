@@ -6,7 +6,7 @@ import Html exposing (Html, a, div, img, input, text)
 import Html.Attributes exposing (class, href, id, placeholder, src, title, value)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
+import Json.Decode as D exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
 import NaturalOrdering
 import Set exposing (Set)
 import String.Normalize
@@ -45,12 +45,35 @@ type alias State =
 
 type alias Catalogue =
     { config : Config
+    , genres : Dict Genre GenreInfo
+    , artists : Dict Artist ArtistInfo
     , albums : List Album
     }
 
 
 type alias Config =
     { selectedGenre : Genre }
+
+
+type alias Genre =
+    String
+
+
+type alias GenreInfo =
+    { name : String
+    , sort : String
+    }
+
+
+type alias Artist =
+    String
+
+
+type alias ArtistInfo =
+    { name : String
+    , shortName : String
+    , sort : String
+    }
 
 
 type alias Album =
@@ -61,7 +84,6 @@ type alias Album =
     , local : Bool
     , archived : Bool
     , booklet : Maybe BookletPath
-    , comment : CommentString
     }
 
 
@@ -84,18 +106,6 @@ type alias SpotifyId =
 
 
 type alias QobuzId =
-    String
-
-
-type alias Genre =
-    String
-
-
-type alias Artist =
-    String
-
-
-type alias CommentString =
     String
 
 
@@ -132,8 +142,10 @@ init _ =
 
 catalogueDecoder : Decoder Catalogue
 catalogueDecoder =
-    map2 Catalogue
+    D.map4 Catalogue
         (field "config" configDecoder)
+        (field "genres" genresDecoder)
+        (field "artists" artistsDecoder)
         (field "albums" (list albumDecoder))
 
 
@@ -142,17 +154,52 @@ configDecoder =
     map Config (field "selectedGenre" string)
 
 
+genresDecoder : Decoder (Dict Genre GenreInfo)
+genresDecoder =
+    let
+        genreInfoDecoder =
+            field "name" string
+                |> D.andThen
+                    (\n ->
+                        D.map2 GenreInfo
+                            (succeed n)
+                            (optionalField "sort" string n)
+                    )
+    in
+    D.dict genreInfoDecoder
+
+
+artistsDecoder : Decoder (Dict Artist ArtistInfo)
+artistsDecoder =
+    let
+        artistInfoDecoder =
+            field "name" string
+                |> D.andThen
+                    (\n ->
+                        D.map3 ArtistInfo
+                            (succeed n)
+                            (optionalField "shortName" string n)
+                            (optionalField "sort" string n)
+                    )
+    in
+    D.dict artistInfoDecoder
+
+
+optionalField : String -> Decoder a -> a -> Decoder a
+optionalField fieldName fieldDecoder default =
+    oneOf [ field fieldName fieldDecoder, succeed default ]
+
+
 albumDecoder : Decoder Album
 albumDecoder =
-    map8 Album
+    D.map7 Album
         (field "cover" string)
         (field "entries" (list entryDecoder))
         (maybe (field "spotify" string))
         (maybe (field "qobuz" string))
-        (oneOf [ field "local" bool, succeed False ])
-        (oneOf [ field "archived" bool, succeed False ])
+        (optionalField "local" bool False)
+        (optionalField "archived" bool False)
         (maybe (field "booklet" string))
-        (field "comment" string)
 
 
 entryDecoder : Decoder Entry
