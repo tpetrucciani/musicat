@@ -16,7 +16,7 @@ module Catalogue exposing
     )
 
 import Dict exposing (Dict)
-import Json.Decode as D exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
+import Json.Decode as D exposing (Decoder)
 import String.Normalize
 import Tuple
 
@@ -104,12 +104,12 @@ pair da db =
 
 optionalField : String -> Decoder a -> Decoder (Maybe a)
 optionalField fieldName fieldDecoder =
-    maybe (field fieldName fieldDecoder)
+    D.maybe (D.field fieldName fieldDecoder)
 
 
 optionalFieldWithDefault : String -> Decoder a -> a -> Decoder a
 optionalFieldWithDefault fieldName fieldDecoder default =
-    oneOf [ field fieldName fieldDecoder, succeed default ]
+    D.oneOf [ D.field fieldName fieldDecoder, D.succeed default ]
 
 
 stringField : String -> Decoder String
