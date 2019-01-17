@@ -37,14 +37,13 @@ type Model
 
 type alias State =
     { catalogue : Catalogue
-    , genres : List Genre
-    , albumsByGenre : Dict Genre (List ( Artist, List Album ))
+    , albumsByGenreAndArtist : Dict GenreId (List ( Artist, List Album ))
     , viewOptions : ViewOptions
     }
 
 
 type alias ViewOptions =
-    { genre : Genre
+    { genre : GenreId
     , filter : String
     , archiveVisibility : ArchiveVisibility
     , visibleSources : List Source
@@ -84,7 +83,7 @@ type Msg
 
 
 type SetViewMsg
-    = SetGenre Genre
+    = SetGenre GenreId
     | ChangeFilter String
     | ChangeArchiveVisibility ArchiveVisibility
     | ToggleSourceVisibility Source
@@ -155,51 +154,34 @@ setView viewMsg viewOptions =
 makeState : Catalogue -> State
 makeState catalogue =
     let
-        getEntries album =
-            List.map
-                (\e -> { genre = e.genre, artist = e.artist, album = album })
-                album.entries
-
-        entries =
-            List.concatMap getEntries catalogue.albums
-
-        getField f =
-            entries
-                |> List.map f
-                |> Set.fromList
-
-        genres =
-            getField .genre
-
         artists =
-            getField .artist
-                |> Set.toList
-                |> List.sortWith NaturalOrdering.compare
+            List.sortBy .sortKey catalogue.artists
 
-        albumsForGenreArtist g a =
-            entries
-                |> List.filter (\e -> e.genre == g && e.artist == a)
-                |> List.map .album
+        albumsByGenreAndArtist : Dict GenreId (List ( Artist, List Album ))
+        albumsByGenreAndArtist =
+            catalogue.genres
+                |> List.sortBy .sortKey
+                |> List.map .id
+                |> initAssocList albumsByArtistForGenre
+                |> Dict.fromList
 
-        listForGenre g =
+        albumsByArtistForGenre : GenreId -> List ( Artist, List Album )
+        albumsByArtistForGenre genre =
             artists
-                |> List.map (\a -> ( a, albumsForGenreArtist g a ))
+                |> initAssocList (albumsForGenreAndArtist genre)
 
-        albumsByGenre =
-            initDict genres listForGenre
-
-        filteredByGenre =
-            albumsByGenre
-                |> Dict.map
-                    (\genre albumsByArtist ->
-                        List.filter
-                            (\( _, albums ) -> not (List.isEmpty albums))
-                            albumsByArtist
+        albumsForGenreAndArtist : GenreId -> Artist -> List Album
+        albumsForGenreAndArtist genre artist =
+            catalogue.albums
+                |> List.filter
+                    (\a ->
+                        List.any
+                            (\e -> e.genre.id == genre && e.artist == artist)
+                            a.entries
                     )
     in
     { catalogue = catalogue
-    , genres = Set.toList genres
-    , albumsByGenre = filteredByGenre
+    , albumsByGenreAndArtist = albumsByGenreAndArtist
     , viewOptions =
         { genre = catalogue.config.selectedGenre
         , filter = ""
@@ -207,6 +189,11 @@ makeState catalogue =
         , visibleSources = [ Local, Spotify, Qobuz, Missing ]
         }
     }
+
+
+initAssocList : (a -> b) -> List a -> List ( a, b )
+initAssocList f =
+    List.map (\a -> ( a, f a ))
 
 
 initDict : Set.Set comparable -> (comparable -> a) -> Dict comparable a
@@ -261,7 +248,8 @@ viewBody model =
 
 getVisibleAlbumsByArtist : State -> List ( Artist, List Album )
 getVisibleAlbumsByArtist state =
-    Dict.get state.viewOptions.genre state.albumsByGenre
+    state.albumsByGenreAndArtist
+        |> Dict.get state.viewOptions.genre
         |> Maybe.withDefault []
         |> List.filter (makeArtistFilter state.viewOptions)
         |> List.map
@@ -273,21 +261,24 @@ getVisibleAlbumsByArtist state =
 
 makeArtistFilter : ViewOptions -> (( Artist, List Album ) -> Bool)
 makeArtistFilter viewOptions =
-    if String.isEmpty viewOptions.filter then
-        always True
+    always True
 
-    else
-        let
-            normalized =
-                String.toLower
-                    (String.Normalize.removeDiacritics viewOptions.filter)
-        in
-        \( a, _ ) ->
-            let
-                aa =
-                    String.toLower (String.Normalize.removeDiacritics a)
-            in
-            String.startsWith normalized aa
+
+
+-- if String.isEmpty viewOptions.filter then
+--     always True
+-- else
+--     let
+--         normalized =
+--             String.toLower
+--                 (String.Normalize.removeDiacritics viewOptions.filter)
+--     in
+--     \( a, _ ) ->
+--         let
+--             aa =
+--                 String.toLower (String.Normalize.removeDiacritics a)
+--         in
+--         String.startsWith normalized aa
 
 
 makeAlbumFilter : ViewOptions -> (Album -> Bool)
@@ -342,9 +333,9 @@ displayGenres state =
     let
         displayGenre : Genre -> Html Msg
         displayGenre g =
-            a [ onClick (SetView (SetGenre g)) ] [ text (g ++ " ") ]
+            a [ onClick (SetView (SetGenre g.id)) ] [ text (g.name ++ " ") ]
     in
-    div [] (List.map displayGenre state.genres)
+    div [] (List.map displayGenre state.catalogue.genres)
 
 
 displaySearchBar : State -> Html Msg
@@ -434,16 +425,14 @@ checkbox =
 
 artistName : Catalogue -> Artist -> String
 artistName catalogue artist =
-    Dict.get artist catalogue.artists
-        |> Maybe.map .name
-        |> Maybe.withDefault artist
+    artist.name
 
 
 displayArtist : Catalogue -> ( Artist, List Album ) -> Html Msg
 displayArtist catalogue ( artist, albums ) =
     let
         contents =
-            [ a [ class "artist-name", id artist ]
+            [ a [ class "artist-name", id artist.id ]
                 [ text (artistName catalogue artist) ]
             , div [ class "album-container" ] (List.map displayAlbum albums)
             ]

@@ -1,7 +1,9 @@
-module Catalogue exposing (Album, Artist, ArtistInfo, BookletPath, Catalogue, Config, CoverPath, Entry, Genre, GenreInfo, QobuzId, SpotifyId, catalogueDecoder)
+module Catalogue exposing (Album, Artist, ArtistId, BookletPath, Catalogue, Config, CoverPath, Entry, Genre, GenreId, QobuzId, SpotifyId, catalogueDecoder)
 
 import Dict exposing (Dict)
 import Json.Decode as D exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
+import String.Normalize
+import Tuple
 
 
 
@@ -9,47 +11,49 @@ import Json.Decode as D exposing (Decoder, bool, field, list, map, map2, map8, m
 
 
 type alias Catalogue =
-    { config : Config
-    , genres : Dict Genre GenreInfo
-    , artists : Dict Artist ArtistInfo
+    { genres : List Genre
+    , artists : List Artist
     , albums : List Album
+    , config : Config
     }
 
 
-type alias Config =
-    { selectedGenre : Genre }
+type alias GenreId =
+    String
 
 
 type alias Genre =
-    String
-
-
-type alias GenreInfo =
-    { name : String
-    , sort : String
+    { id : GenreId
+    , name : String
+    , sortKey : String
     }
 
 
-type alias Artist =
+type alias ArtistId =
     String
 
 
-type alias ArtistInfo =
-    { name : String
+type alias Artist =
+    { id : ArtistId
+    , name : String
     , shortName : String
-    , sort : String
+    , sortKey : String
     }
 
 
 type alias Album =
     { cover : CoverPath
     , entries : List Entry
-    , spotify : Maybe SpotifyId
     , qobuz : Maybe QobuzId
+    , spotify : Maybe SpotifyId
     , local : Bool
     , archived : Bool
     , booklet : Maybe BookletPath
     }
+
+
+type alias CoverPath =
+    String
 
 
 type alias Entry =
@@ -58,11 +62,7 @@ type alias Entry =
     }
 
 
-type alias CoverPath =
-    String
-
-
-type alias BookletPath =
+type alias QobuzId =
     String
 
 
@@ -70,76 +70,173 @@ type alias SpotifyId =
     String
 
 
-type alias QobuzId =
+type alias BookletPath =
     String
 
 
+type alias Config =
+    { selectedGenre : GenreId }
 
--- DECODER
+
+
+-- DECODER: HELPER FUNCTIONS
+
+
+pair : Decoder a -> Decoder b -> Decoder ( a, b )
+pair da db =
+    D.map2 Tuple.pair da db
+
+
+optionalField : String -> Decoder a -> Decoder (Maybe a)
+optionalField fieldName fieldDecoder =
+    maybe (field fieldName fieldDecoder)
+
+
+optionalFieldWithDefault : String -> Decoder a -> a -> Decoder a
+optionalFieldWithDefault fieldName fieldDecoder default =
+    oneOf [ field fieldName fieldDecoder, succeed default ]
+
+
+stringField : String -> Decoder String
+stringField fieldName =
+    D.field fieldName D.string
+
+
+optionalStringField : String -> Decoder (Maybe String)
+optionalStringField fieldName =
+    optionalField fieldName D.string
+
+
+optionalStringFieldWithDefault : String -> String -> Decoder String
+optionalStringFieldWithDefault fieldName default =
+    optionalFieldWithDefault fieldName D.string default
+
+
+
+-- DECODER: CATALOGUE DECODER
 
 
 catalogueDecoder : Decoder Catalogue
 catalogueDecoder =
-    D.map4 Catalogue
-        (field "config" configDecoder)
-        (field "genres" genresDecoder)
-        (field "artists" artistsDecoder)
-        (field "albums" (list albumDecoder))
+    pair (D.field "genres" genresDecoder) (D.field "artists" artistsDecoder)
+        |> D.andThen
+            (\( g, a ) ->
+                D.map4 Catalogue
+                    (g |> Dict.values |> D.succeed)
+                    (a |> Dict.values |> D.succeed)
+                    (D.field "albums" (D.list (albumDecoder g a)))
+                    (D.field "config" (configDecoder g))
+            )
 
 
-configDecoder : Decoder Config
-configDecoder =
-    map Config (field "selectedGenre" string)
+type alias GenreInfo =
+    { name : String, sortKey : String }
 
 
-genresDecoder : Decoder (Dict Genre GenreInfo)
+genresDecoder : Decoder (Dict GenreId Genre)
 genresDecoder =
     let
+        genreInfoDecoder : Decoder GenreInfo
         genreInfoDecoder =
-            field "name" string
+            stringField "name"
                 |> D.andThen
                     (\n ->
                         D.map2 GenreInfo
-                            (succeed n)
-                            (optionalField "sort" string n)
+                            (D.succeed n)
+                            (D.map simplifyString
+                                (optionalStringFieldWithDefault "sortKey" n)
+                            )
                     )
+
+        genreInfoToGenre : GenreId -> GenreInfo -> Genre
+        genreInfoToGenre id { name, sortKey } =
+            Genre id name sortKey
     in
-    D.dict genreInfoDecoder
+    D.map (Dict.map genreInfoToGenre) (D.dict genreInfoDecoder)
 
 
-artistsDecoder : Decoder (Dict Artist ArtistInfo)
+type alias ArtistInfo =
+    { name : String, shortName : String, sortKey : String }
+
+
+artistsDecoder : Decoder (Dict ArtistId Artist)
 artistsDecoder =
     let
+        artistInfoDecoder : Decoder ArtistInfo
         artistInfoDecoder =
-            field "name" string
+            stringField "name"
                 |> D.andThen
                     (\n ->
                         D.map3 ArtistInfo
-                            (succeed n)
-                            (optionalField "shortName" string n)
-                            (optionalField "sort" string n)
+                            (D.succeed n)
+                            (optionalStringFieldWithDefault "shortName" n)
+                            (D.map simplifyString
+                                (optionalStringFieldWithDefault "sortKey" n)
+                            )
                     )
+
+        artistInfoToArtist : ArtistId -> ArtistInfo -> Artist
+        artistInfoToArtist id { name, shortName, sortKey } =
+            Artist id name shortName sortKey
     in
-    D.dict artistInfoDecoder
+    D.map (Dict.map artistInfoToArtist) (D.dict artistInfoDecoder)
 
 
-optionalField : String -> Decoder a -> a -> Decoder a
-optionalField fieldName fieldDecoder default =
-    oneOf [ field fieldName fieldDecoder, succeed default ]
-
-
-albumDecoder : Decoder Album
-albumDecoder =
+albumDecoder : Dict GenreId Genre -> Dict ArtistId Artist -> Decoder Album
+albumDecoder genres artists =
     D.map7 Album
-        (field "cover" string)
-        (field "entries" (list entryDecoder))
-        (maybe (field "spotify" string))
-        (maybe (field "qobuz" string))
-        (optionalField "local" bool False)
-        (optionalField "archived" bool False)
-        (maybe (field "booklet" string))
+        (stringField "cover")
+        (D.field "entries" (D.list (entryDecoder genres artists)))
+        (optionalStringField "qobuz")
+        (optionalStringField "spotify")
+        (optionalFieldWithDefault "local" D.bool False)
+        (optionalFieldWithDefault "archived" D.bool False)
+        (optionalStringField "booklet")
 
 
-entryDecoder : Decoder Entry
-entryDecoder =
-    map2 Entry (field "genre" string) (field "artist" string)
+stringFieldWithLookupInDict : String -> Dict String a -> Decoder a
+stringFieldWithLookupInDict fieldName dict =
+    stringField fieldName
+        |> D.andThen
+            (\id ->
+                Dict.get id dict
+                    |> Maybe.map D.succeed
+                    |> Maybe.withDefault
+                        (D.fail ("Identifier " ++ id ++ " not found"))
+            )
+
+
+entryDecoder : Dict GenreId Genre -> Dict ArtistId Artist -> Decoder Entry
+entryDecoder genres artists =
+    D.map2 Entry
+        (stringFieldWithLookupInDict "genre" genres)
+        (stringFieldWithLookupInDict "artist" artists)
+
+
+configDecoder : Dict GenreId Genre -> Decoder Config
+configDecoder genres =
+    D.map (.id >> Config) (stringFieldWithLookupInDict "selectedGenre" genres)
+
+
+
+-- STRING SIMPLIFICATION AND COMPARISON
+
+
+simplifyString : String -> String
+simplifyString =
+    String.toLower >> String.Normalize.removeDiacritics
+
+
+compareBySortKey : { a | sortKey : String } -> { b | sortKey : String } -> Order
+compareBySortKey x y =
+    compare x.sortKey y.sortKey
+
+
+compareGenres : Genre -> Genre -> Order
+compareGenres =
+    compareBySortKey
+
+
+compareArtists : Artist -> Artist -> Order
+compareArtists =
+    compareBySortKey
