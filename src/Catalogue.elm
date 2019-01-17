@@ -1,4 +1,19 @@
-module Catalogue exposing (Album, Artist, ArtistId, BookletPath, Catalogue, Config, CoverPath, Entry, Genre, GenreId, QobuzId, SpotifyId, catalogueDecoder)
+module Catalogue exposing
+    ( Album
+    , Artist
+    , ArtistId
+    , BookletPath
+    , Catalogue
+    , Config
+    , CoverPath
+    , Entry
+    , Genre
+    , GenreId
+    , QobuzId
+    , SpotifyId
+    , artistMatchesFilter
+    , catalogueDecoder
+    )
 
 import Dict exposing (Dict)
 import Json.Decode as D exposing (Decoder, bool, field, list, map, map2, map8, maybe, null, oneOf, string, succeed)
@@ -240,3 +255,12 @@ compareGenres =
 compareArtists : Artist -> Artist -> Order
 compareArtists =
     compareBySortKey
+
+
+artistMatchesFilter : String -> Artist -> Bool
+artistMatchesFilter filter artist =
+    let nameWords = artist.name |> simplifyString |> String.words
+    in
+    List.all
+        (\w -> List.any (String.startsWith w) nameWords)
+        (String.words filter)

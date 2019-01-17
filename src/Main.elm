@@ -261,24 +261,16 @@ getVisibleAlbumsByArtist state =
 
 makeArtistFilter : ViewOptions -> (( Artist, List Album ) -> Bool)
 makeArtistFilter viewOptions =
-    always True
+    if String.isEmpty viewOptions.filter then
+        always True
 
-
-
--- if String.isEmpty viewOptions.filter then
---     always True
--- else
---     let
---         normalized =
---             String.toLower
---                 (String.Normalize.removeDiacritics viewOptions.filter)
---     in
---     \( a, _ ) ->
---         let
---             aa =
---                 String.toLower (String.Normalize.removeDiacritics a)
---         in
---         String.startsWith normalized aa
+    else
+        let
+            normalized =
+                String.toLower
+                    (String.Normalize.removeDiacritics viewOptions.filter)
+        in
+        (Catalogue.artistMatchesFilter normalized) << Tuple.first
 
 
 makeAlbumFilter : ViewOptions -> (Album -> Bool)
