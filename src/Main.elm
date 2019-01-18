@@ -37,9 +37,14 @@ type Model
 
 type alias State =
     { catalogue : Catalogue
-    , albumsByGenreAndArtist : Dict GenreId (List ( Artist, List Album ))
+    , albumsByGenreAndArtist :
+        Dict GenreId (List ( Artist, AlbumsForGenreAndArtist ))
     , viewOptions : ViewOptions
     }
+
+
+type alias AlbumsForGenreAndArtist =
+    ( List Album, List ( Grouping, List Album ) )
 
 
 type alias ViewOptions =
@@ -157,7 +162,7 @@ makeState catalogue =
         artists =
             List.sortBy .sortKey catalogue.artists
 
-        albumsByGenreAndArtist : Dict GenreId (List ( Artist, List Album ))
+        albumsByGenreAndArtist : Dict GenreId (List ( Artist, AlbumsForGenreAndArtist ))
         albumsByGenreAndArtist =
             catalogue.genres
                 |> List.sortBy .sortKey
@@ -165,20 +170,46 @@ makeState catalogue =
                 |> initAssocList albumsByArtistForGenre
                 |> Dict.fromList
 
-        albumsByArtistForGenre : GenreId -> List ( Artist, List Album )
+        albumsByArtistForGenre : GenreId -> List ( Artist, AlbumsForGenreAndArtist )
         albumsByArtistForGenre genre =
             artists
                 |> initAssocList (albumsForGenreAndArtist genre)
 
-        albumsForGenreAndArtist : GenreId -> Artist -> List Album
+        albumsForGenreAndArtist : GenreId -> Artist -> AlbumsForGenreAndArtist
         albumsForGenreAndArtist genre artist =
-            catalogue.albums
-                |> List.filter
-                    (\a ->
-                        List.any
-                            (\e -> e.genre.id == genre && e.artist == artist)
-                            a.entries
-                    )
+            let
+                matchesGenreArtist : GenreId -> Artist -> Entry -> Bool
+                matchesGenreArtist g a entry =
+                    entry.genre.id == g && entry.artist == a
+
+                matchesGrouping : Maybe Grouping -> Album -> Bool
+                matchesGrouping grouping album =
+                    List.any (\e -> e.grouping == grouping) album.entries
+
+                albums : List Album
+                albums =
+                    catalogue.albums
+                        |> List.filter
+                            (\a ->
+                                List.any (matchesGenreArtist genre artist)
+                                    a.entries
+                            )
+
+                groupings : List Grouping
+                groupings =
+                    List.concatMap
+                        (\a -> List.filterMap (\e -> e.grouping) a.entries)
+                        albums
+                        |> List.sortBy .sortKey
+                        |> deduplicateSortedList
+
+                albumsForGrouping : Maybe Grouping -> List Album
+                albumsForGrouping grouping =
+                    List.filter (matchesGrouping grouping) albums
+            in
+            ( albumsForGrouping Nothing
+            , List.map (\g -> ( g, albumsForGrouping (Just g) )) groupings
+            )
     in
     { catalogue = catalogue
     , albumsByGenreAndArtist = albumsByGenreAndArtist
@@ -189,6 +220,20 @@ makeState catalogue =
         , visibleSources = [ Local, Spotify, Qobuz, Missing ]
         }
     }
+
+
+deduplicateSortedList : List a -> List a
+deduplicateSortedList l =
+    case l of
+        x :: ((y :: tail) as ll) ->
+            if x == y then
+                deduplicateSortedList ll
+
+            else
+                x :: deduplicateSortedList ll
+
+        _ ->
+            l
 
 
 initAssocList : (a -> b) -> List a -> List ( a, b )
@@ -246,20 +291,33 @@ viewBody model =
             ]
 
 
-getVisibleAlbumsByArtist : State -> List ( Artist, List Album )
+getVisibleAlbumsByArtist : State -> List ( Artist, AlbumsForGenreAndArtist )
 getVisibleAlbumsByArtist state =
+    let
+        aux albums =
+            albums
+                |> List.filter (makeAlbumFilter state.viewOptions)
+    in
     state.albumsByGenreAndArtist
         |> Dict.get state.viewOptions.genre
         |> Maybe.withDefault []
         |> List.filter (makeArtistFilter state.viewOptions)
         |> List.map
-            (\( a, albums ) ->
-                ( a, List.filter (makeAlbumFilter state.viewOptions) albums )
+            (\( artist, ( albumsNoGrp, albumsByGrp ) ) ->
+                ( artist
+                , ( aux albumsNoGrp
+                  , List.map (\( g, a ) -> ( g, aux a )) albumsByGrp
+                  )
+                )
             )
-        |> List.filter (\( _, albums ) -> not (List.isEmpty albums))
+        |> List.filter
+            (\( _, ( albumsNoGrp, albumsByGrp ) ) ->
+              not (List.isEmpty albumsNoGrp) ||
+                List.any (not << List.isEmpty << Tuple.second) albumsByGrp
+            )
 
 
-makeArtistFilter : ViewOptions -> (( Artist, List Album ) -> Bool)
+makeArtistFilter : ViewOptions -> (( Artist, AlbumsForGenreAndArtist ) -> Bool)
 makeArtistFilter viewOptions =
     if String.isEmpty viewOptions.filter then
         always True
@@ -270,7 +328,7 @@ makeArtistFilter viewOptions =
                 String.toLower
                     (String.Normalize.removeDiacritics viewOptions.filter)
         in
-        (Catalogue.artistMatchesFilter normalized) << Tuple.first
+        Catalogue.artistMatchesFilter normalized << Tuple.first
 
 
 makeAlbumFilter : ViewOptions -> (Album -> Bool)
@@ -299,19 +357,19 @@ matchesSourceVisibility album source =
             album.local
 
         Spotify ->
-            isSome album.spotify
+            isJust album.spotify
 
         Qobuz ->
-            isSome album.qobuz
+            isJust album.qobuz
 
         Missing ->
             not album.local
-                && not (isSome album.spotify)
-                && not (isSome album.qobuz)
+                && not (isJust album.spotify)
+                && not (isJust album.qobuz)
 
 
-isSome : Maybe a -> Bool
-isSome x =
+isJust : Maybe a -> Bool
+isJust x =
     case x of
         Just _ ->
             True
@@ -346,18 +404,16 @@ displaySearchBar state =
 
 displayArchiveVisibilitySelector : State -> Html Msg
 displayArchiveVisibilitySelector state =
+    let
+        mkRadio visibility =
+            radio
+                (SetView <| ChangeArchiveVisibility visibility)
+                (archiveVisibilityName visibility)
+                (state.viewOptions.archiveVisibility == visibility)
+    in
     div []
         [ Html.fieldset []
-            [ radio (SetView <| ChangeArchiveVisibility OnlyUnarchived)
-                "Only unarchived"
-                (state.viewOptions.archiveVisibility == OnlyUnarchived)
-            , radio (SetView <| ChangeArchiveVisibility OnlyArchived)
-                "Only archived"
-                (state.viewOptions.archiveVisibility == OnlyArchived)
-            , radio (SetView <| ChangeArchiveVisibility Both)
-                "Both"
-                (state.viewOptions.archiveVisibility == Both)
-            ]
+            (List.map mkRadio [ OnlyUnarchived, OnlyArchived, Both ])
         ]
 
 
@@ -374,6 +430,19 @@ displaySourceVisibilitySelector state =
             List.map source2checkbox [ Local, Spotify, Qobuz, Missing ]
     in
     div [] [ Html.fieldset [] checkboxes ]
+
+
+archiveVisibilityName : ArchiveVisibility -> String
+archiveVisibilityName visibility =
+    case visibility of
+        OnlyUnarchived ->
+            "Only unarchived"
+
+        OnlyArchived ->
+            "Only archived"
+
+        Both ->
+            "Both"
 
 
 sourceName : Source -> String
@@ -420,16 +489,25 @@ artistName catalogue artist =
     artist.name
 
 
-displayArtist : Catalogue -> ( Artist, List Album ) -> Html Msg
-displayArtist catalogue ( artist, albums ) =
+displayArtist : Catalogue -> ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
+displayArtist catalogue ( artist, ( albumsNoGrp, albumsByGrp ) ) =
     let
         contents =
             [ a [ class "artist-name", id artist.id ]
                 [ text (artistName catalogue artist) ]
-            , div [ class "album-container" ] (List.map displayAlbum albums)
+            , div [ class "album-container" ]
+                (List.map displayAlbum albumsNoGrp
+                    ++ List.concatMap displayGrouping albumsByGrp
+                )
             ]
     in
     div [ class "artist" ] contents
+
+
+displayGrouping : ( Grouping, List Album ) -> List (Html Msg)
+displayGrouping ( grouping, albums ) =
+    div [ class "grouping" ] [ text grouping.name ]
+        :: List.map displayAlbum albums
 
 
 displayAlbum : Album -> Html Msg

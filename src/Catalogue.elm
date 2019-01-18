@@ -9,6 +9,7 @@ module Catalogue exposing
     , Entry
     , Genre
     , GenreId
+    , Grouping
     , QobuzId
     , SpotifyId
     , artistMatchesFilter
@@ -74,6 +75,7 @@ type alias CoverPath =
 type alias Entry =
     { genre : Genre
     , artist : Artist
+    , grouping : Maybe Grouping
     }
 
 
@@ -87,6 +89,12 @@ type alias SpotifyId =
 
 type alias BookletPath =
     String
+
+
+type alias Grouping =
+    { name : String
+    , sortKey : String
+    }
 
 
 type alias Config =
@@ -223,9 +231,28 @@ stringFieldWithLookupInDict fieldName dict =
 
 entryDecoder : Dict GenreId Genre -> Dict ArtistId Artist -> Decoder Entry
 entryDecoder genres artists =
-    D.map2 Entry
+    D.map3 Entry
         (stringFieldWithLookupInDict "genre" genres)
         (stringFieldWithLookupInDict "artist" artists)
+        groupingDecoder
+
+
+groupingDecoder : Decoder (Maybe Grouping)
+groupingDecoder =
+    let
+        actualGroupingDecoder : Decoder Grouping
+        actualGroupingDecoder =
+            D.andThen
+                (\g ->
+                    D.map2 Grouping
+                        (D.succeed g)
+                        (D.map simplifyString
+                            (optionalStringFieldWithDefault "groupingSortKey" g)
+                        )
+                )
+                (stringField "grouping")
+    in
+    D.oneOf [ D.map Just actualGroupingDecoder, D.succeed Nothing ]
 
 
 configDecoder : Dict GenreId Genre -> Decoder Config
@@ -259,7 +286,9 @@ compareArtists =
 
 artistMatchesFilter : String -> Artist -> Bool
 artistMatchesFilter filter artist =
-    let nameWords = artist.name |> simplifyString |> String.words
+    let
+        nameWords =
+            artist.name |> simplifyString |> String.words
     in
     List.all
         (\w -> List.any (String.startsWith w) nameWords)
