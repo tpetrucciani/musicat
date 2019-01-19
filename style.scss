@@ -83,7 +83,10 @@ main {
 }
 
 footer {
-  height: 80px;
+  color: $grey-light;
+  text-align: center;
+  vertical-align: center;
+  margin: 30px 0 35px 0;
 }
 
 img {
@@ -150,7 +153,7 @@ a {
   color: $artist-name-color;
   font-size: 22px;
   font-weight: 300;
-  margin: 0 24px 0 0;
+  margin: 30px 24px 0 0;
   min-width: 222px;
   text-align: right;
 }

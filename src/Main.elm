@@ -289,7 +289,12 @@ viewBody model =
                 ]
             , Html.main_ []
                 (List.map (displayArtist state.catalogue) visibleAlbumsByArtist)
-            , Html.footer [] []
+            , Html.footer []
+                [ text
+                    ("Colours based on the Atom One themes. "
+                        ++ "Font: Source Sans Pro."
+                    )
+                ]
             ]
 
 
