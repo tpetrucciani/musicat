@@ -58,6 +58,10 @@ $icon-archived-color: $main-text-color;
 // Styles
 //
 
+*:focus {
+  outline: none;
+}
+
 body {
   color: $main-text-color;
   background-color: $background-color;
