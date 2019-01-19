@@ -438,7 +438,7 @@ displayGenres state =
         displayGenre g =
             a [ onClick (SetView (SetGenre g.id)) ] [ text (g.name ++ " ") ]
     in
-    div [] (List.map displayGenre state.catalogue.genres)
+    div [] (List.map displayGenre (List.sortBy .sortKey state.catalogue.genres))
 
 
 displaySearchBar : State -> Html Msg
