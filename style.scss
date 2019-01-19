@@ -93,6 +93,20 @@ a {
   color: inherit;
 }
 
+.artist-list {
+  margin: 20px 0 0 0;
+  display: flex;
+  flex-flow: row wrap;
+
+  .artist-list-letter, .artist-list-name {
+    margin: 0 15px 0 0;
+  }
+
+  .artist-list-letter {
+    color: $orange;
+  }
+}
+
 .artist {
   margin: 0 0 20px 40px;
 }

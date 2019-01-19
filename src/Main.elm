@@ -276,19 +276,67 @@ viewBody model =
             [ text "Loading..." ]
 
         Success state ->
-            [ Html.header []
+            let
+                visibleAlbumsByArtist =
+                    getVisibleAlbumsByArtist state
+            in
+            [ Html.header [ id "top" ]
                 [ displayGenres state
                 , displaySearchBar state
                 , displayArchiveVisibilitySelector state
                 , displaySourceVisibilitySelector state
+                , displayArtistList visibleAlbumsByArtist
                 ]
             , Html.main_ []
-                (List.map
-                    (displayArtist state.catalogue)
-                    (getVisibleAlbumsByArtist state)
-                )
+                (List.map (displayArtist state.catalogue) visibleAlbumsByArtist)
             , Html.footer [] []
             ]
+
+
+displayArtistList : List ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
+displayArtistList albumsByArtist =
+    let
+        artists =
+            List.map Tuple.first albumsByArtist
+
+        firstLetter artist =
+            String.left 1 artist.sortKey
+
+        artistsAndLetters =
+            List.foldl
+                (\artist ( list, letter ) ->
+                    let
+                        l =
+                            firstLetter artist
+                    in
+                    ( ( artist, letter /= l ) :: list, l )
+                )
+                ( [], "" )
+                artists
+                |> Tuple.first
+                |> List.reverse
+
+        artistLinks =
+            List.map
+                (\( artist, showLetter ) ->
+                    if showLetter then
+                        Html.span []
+                            [ makeLetter (firstLetter artist), makeName artist ]
+
+                    else
+                        makeName artist
+                )
+                artistsAndLetters
+
+        makeLetter letter =
+            Html.span [ class "artist-list-letter" ]
+                [ text (String.toUpper letter) ]
+
+        makeName artist =
+            Html.span [ class "artist-list-name" ]
+                [ a [ href ("#" ++ artist.id) ] [ text artist.shortName ] ]
+    in
+    div [ class "artist-list" ] artistLinks
 
 
 getVisibleAlbumsByArtist : State -> List ( Artist, AlbumsForGenreAndArtist )
@@ -493,7 +541,7 @@ displayArtist : Catalogue -> ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
 displayArtist catalogue ( artist, ( albumsNoGrp, albumsByGrp ) ) =
     let
         contents =
-            [ a [ class "artist-name", id artist.id ]
+            [ a [ class "artist-name", id artist.id, href "#top" ]
                 [ text (artistName catalogue artist) ]
             , div
                 [ class "grouping-links" ]
