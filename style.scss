@@ -89,8 +89,7 @@ img {
 }
 
 .artist {
-  margin-left: 40px;
-  margin-bottom: 20px;
+  margin: 0 0 20px 40px;
 }
 
 .artist-name {
@@ -101,7 +100,26 @@ img {
 }
 
 .album-container {
-  margin: 8px 0 0 0;
+  margin: 10px 0 0 0;
+}
+
+.grouping {
+  display: inline-block;
+
+  .album {
+    display: inline-block;
+  }
+}
+
+.grouping-name {
+  display: inline-block;
+  vertical-align: top;
+  color: $artist-name-color;
+  font-size: 22px;
+  font-weight: 300;
+  margin: 0 24px 0 0;
+  min-width: 222px;
+  text-align: right;
 }
 
 .album {

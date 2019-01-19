@@ -312,8 +312,8 @@ getVisibleAlbumsByArtist state =
             )
         |> List.filter
             (\( _, ( albumsNoGrp, albumsByGrp ) ) ->
-              not (List.isEmpty albumsNoGrp) ||
-                List.any (not << List.isEmpty << Tuple.second) albumsByGrp
+                not (List.isEmpty albumsNoGrp)
+                    || List.any (not << List.isEmpty << Tuple.second) albumsByGrp
             )
 
 
@@ -497,17 +497,19 @@ displayArtist catalogue ( artist, ( albumsNoGrp, albumsByGrp ) ) =
                 [ text (artistName catalogue artist) ]
             , div [ class "album-container" ]
                 (List.map displayAlbum albumsNoGrp
-                    ++ List.concatMap displayGrouping albumsByGrp
+                    ++ List.map displayGrouping albumsByGrp
                 )
             ]
     in
     div [ class "artist" ] contents
 
 
-displayGrouping : ( Grouping, List Album ) -> List (Html Msg)
+displayGrouping : ( Grouping, List Album ) -> Html Msg
 displayGrouping ( grouping, albums ) =
-    div [ class "grouping" ] [ text grouping.name ]
-        :: List.map displayAlbum albums
+    div [ class "grouping" ]
+        (div [ class "grouping-name" ] [ text grouping.name ]
+            :: List.map displayAlbum albums
+        )
 
 
 displayAlbum : Album -> Html Msg
