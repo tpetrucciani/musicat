@@ -495,19 +495,36 @@ displayArtist catalogue ( artist, ( albumsNoGrp, albumsByGrp ) ) =
         contents =
             [ a [ class "artist-name", id artist.id ]
                 [ text (artistName catalogue artist) ]
+            , div
+                [ class "grouping-links" ]
+                (List.map (displayGroupingLink << Tuple.first) albumsByGrp)
             , div [ class "album-container" ]
                 (List.map displayAlbum albumsNoGrp
-                    ++ List.map displayGrouping albumsByGrp
+                    ++ List.map (displayGrouping artist) albumsByGrp
                 )
             ]
     in
     div [ class "artist" ] contents
 
 
-displayGrouping : ( Grouping, List Album ) -> Html Msg
-displayGrouping ( grouping, albums ) =
+makeId : String -> String
+makeId =
+    String.Normalize.url
+
+
+displayGroupingLink : Grouping -> Html Msg
+displayGroupingLink grouping =
+    a [ class "grouping-link", href ("#" ++ makeId grouping.name) ]
+        [ text grouping.name ]
+
+
+displayGrouping : Artist -> ( Grouping, List Album ) -> Html Msg
+displayGrouping artist ( grouping, albums ) =
     div [ class "grouping" ]
-        (div [ class "grouping-name" ] [ text grouping.name ]
+        (div [ class "grouping-name" ]
+            [ a [ id (makeId grouping.name), href ("#" ++ artist.id) ]
+                [ text grouping.name ]
+            ]
             :: List.map displayAlbum albums
         )
 

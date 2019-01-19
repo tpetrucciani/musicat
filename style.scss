@@ -88,6 +88,11 @@ img {
   border: 1px solid $image-border-color;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 .artist {
   margin: 0 0 20px 40px;
 }
@@ -100,7 +105,17 @@ img {
 }
 
 .album-container {
-  margin: 10px 0 0 0;
+  margin: 12px 0 0 0;
+}
+
+.grouping-links {
+  display: inline;
+}
+
+.grouping-link {
+  color: $artist-name-color;
+  margin: 0 0 0 20px;
+  font-size: 15px;
 }
 
 .grouping {
@@ -153,8 +168,6 @@ img {
 }
 
 .icon > a {
-  text-decoration: none;
-  color: inherit;
   user-select: none;
   -webkit-user-select: none;
 }
