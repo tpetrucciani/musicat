@@ -7397,7 +7397,7 @@ var author$project$Main$init = function (_n0) {
 		elm$http$Http$get(
 			{
 				aQ: A2(elm$http$Http$expectJson, author$project$Main$GotCatalogue, author$project$Catalogue$catalogueDecoder),
-				bf: '/data/catalogue.json'
+				bf: 'data/catalogue.json'
 			}));
 };
 var elm$core$Platform$Sub$batch = _Platform_batch;
@@ -7990,6 +7990,18 @@ var elm$html$Html$Attributes$width = function (n) {
 		elm$core$String$fromInt(n));
 };
 var author$project$Main$displayAlbum = function (album) {
+	var imageLink = function () {
+		var _n0 = album.a9;
+		if (!_n0.$) {
+			var id = _n0.a;
+			return _List_fromArray(
+				[
+					elm$html$Html$Attributes$href('spotify:album:' + id)
+				]);
+		} else {
+			return _List_Nil;
+		}
+	}();
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -7999,14 +8011,20 @@ var author$project$Main$displayAlbum = function (album) {
 		_List_fromArray(
 			[
 				A2(
-				elm$html$Html$img,
+				elm$html$Html$a,
+				imageLink,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$src('data/covers/' + album.aN),
-						elm$html$Html$Attributes$width(220),
-						elm$html$Html$Attributes$height(220)
-					]),
-				_List_Nil),
+						A2(
+						elm$html$Html$img,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$src('data/covers/' + album.aN),
+								elm$html$Html$Attributes$width(220),
+								elm$html$Html$Attributes$height(220)
+							]),
+						_List_Nil)
+					])),
 				A2(
 				elm$html$Html$div,
 				_List_fromArray(
