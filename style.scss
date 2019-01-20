@@ -168,6 +168,32 @@ a {
   display: block;
 }
 
+.star {
+  display: none;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 3px 2px 2px 2px;
+  border-bottom-left-radius: 8px;
+
+  img {
+    border: none;
+  }
+}
+
+.album:hover .star {
+  display: block;
+  background-color: $icon-bar-background-color;
+}
+
+.star.starred {
+  display: block;
+  background-color: fade-out($icon-bar-background-color, 0.1);
+}
+
 .icon-bar {
   display: none;
   background-color: $icon-bar-background-color;

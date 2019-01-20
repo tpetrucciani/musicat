@@ -40,6 +40,7 @@ type alias State =
     , albumsByGenreAndArtist :
         Dict GenreId (List ( Artist, AlbumsForGenreAndArtist ))
     , viewOptions : ViewOptions
+    , starredAlbums : StarredAlbums
     }
 
 
@@ -47,11 +48,16 @@ type alias AlbumsForGenreAndArtist =
     ( List Album, List ( Grouping, List Album ) )
 
 
+type alias StarredAlbums =
+    Set String
+
+
 type alias ViewOptions =
     { genre : GenreId
     , filter : String
     , archiveVisibility : ArchiveVisibility
     , visibleSources : List Source
+    , onlyStarredVisible : Bool
     }
 
 
@@ -85,6 +91,7 @@ init _ =
 type Msg
     = GotCatalogue (Result Http.Error Catalogue)
     | SetView SetViewMsg
+    | ToggleStarred String
 
 
 type SetViewMsg
@@ -92,6 +99,7 @@ type SetViewMsg
     | ChangeFilter String
     | ChangeArchiveVisibility ArchiveVisibility
     | ToggleSourceVisibility Source
+    | ToggleOnlyStarredVisible
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -128,6 +136,20 @@ update msg model =
                     in
                     ( Success newState, Cmd.none )
 
+                ToggleStarred id ->
+                    let
+                        newStarredAlbums =
+                            if Set.member id state.starredAlbums then
+                                Set.remove id state.starredAlbums
+
+                            else
+                                Set.insert id state.starredAlbums
+
+                        newState =
+                            { state | starredAlbums = newStarredAlbums }
+                    in
+                    ( Success newState, Cmd.none )
+
                 _ ->
                     ( model, Cmd.none )
 
@@ -154,6 +176,11 @@ setView viewMsg viewOptions =
                         source :: viewOptions.visibleSources
             in
             { viewOptions | visibleSources = newVisibleSources }
+
+        ToggleOnlyStarredVisible ->
+            { viewOptions
+                | onlyStarredVisible = not viewOptions.onlyStarredVisible
+            }
 
 
 makeState : Catalogue -> State
@@ -218,7 +245,9 @@ makeState catalogue =
         , filter = ""
         , archiveVisibility = OnlyUnarchived
         , visibleSources = [ Local, Spotify, Qobuz, Missing ]
+        , onlyStarredVisible = False
         }
+    , starredAlbums = Set.fromList []
     }
 
 
@@ -285,10 +314,11 @@ viewBody model =
                 , displaySearchBar state
                 , displayArchiveVisibilitySelector state
                 , displaySourceVisibilitySelector state
+                , displayStarVisibilitySelector state
                 , displayArtistList visibleAlbumsByArtist
                 ]
             , Html.main_ []
-                (List.map (displayArtist state.catalogue) visibleAlbumsByArtist)
+                (List.map (displayArtist state) visibleAlbumsByArtist)
             , Html.footer []
                 [ text
                     ("Colours based on the Atom One themes. "
@@ -348,8 +378,8 @@ getVisibleAlbumsByArtist : State -> List ( Artist, AlbumsForGenreAndArtist )
 getVisibleAlbumsByArtist state =
     let
         aux albums =
-            albums
-                |> List.filter (makeAlbumFilter state.viewOptions)
+            List.filter (makeAlbumFilter state.viewOptions state.starredAlbums)
+                albums
     in
     state.albumsByGenreAndArtist
         |> Dict.get state.viewOptions.genre
@@ -384,10 +414,13 @@ makeArtistFilter viewOptions =
         Catalogue.artistMatchesFilter normalized << Tuple.first
 
 
-makeAlbumFilter : ViewOptions -> (Album -> Bool)
-makeAlbumFilter viewOptions album =
+makeAlbumFilter : ViewOptions -> StarredAlbums -> (Album -> Bool)
+makeAlbumFilter viewOptions starredAlbums album =
     matchesArchiveVisibility album viewOptions.archiveVisibility
         && List.any (matchesSourceVisibility album) viewOptions.visibleSources
+        && (not viewOptions.onlyStarredVisible
+                || Set.member album.cover starredAlbums
+           )
 
 
 matchesArchiveVisibility : Album -> ArchiveVisibility -> Bool
@@ -485,6 +518,17 @@ displaySourceVisibilitySelector state =
     div [] [ Html.fieldset [] checkboxes ]
 
 
+displayStarVisibilitySelector : State -> Html Msg
+displayStarVisibilitySelector state =
+    let
+        c =
+            checkbox (SetView ToggleOnlyStarredVisible)
+                "Show only starred albums"
+                state.viewOptions.onlyStarredVisible
+    in
+    div [] [ Html.fieldset [] [ c ] ]
+
+
 archiveVisibilityName : ArchiveVisibility -> String
 archiveVisibilityName visibility =
     case visibility of
@@ -542,18 +586,20 @@ artistName catalogue artist =
     artist.name
 
 
-displayArtist : Catalogue -> ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
-displayArtist catalogue ( artist, ( albumsNoGrp, albumsByGrp ) ) =
+displayArtist : State -> ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
+displayArtist state ( artist, ( albumsNoGrp, albumsByGrp ) ) =
     let
         contents =
             [ a [ class "artist-name", id artist.id, href "#top" ]
-                [ text (artistName catalogue artist) ]
+                [ text (artistName state.catalogue artist) ]
             , div
                 [ class "grouping-links" ]
                 (List.map (displayGroupingLink << Tuple.first) albumsByGrp)
             , div [ class "album-container" ]
-                (List.map displayAlbum albumsNoGrp
-                    ++ List.map (displayGrouping artist) albumsByGrp
+                (List.map (displayAlbum state.starredAlbums) albumsNoGrp
+                    ++ List.map
+                        (displayGrouping state.starredAlbums artist)
+                        albumsByGrp
                 )
             ]
     in
@@ -571,28 +617,41 @@ displayGroupingLink grouping =
         [ text grouping.name ]
 
 
-displayGrouping : Artist -> ( Grouping, List Album ) -> Html Msg
-displayGrouping artist ( grouping, albums ) =
+displayGrouping : StarredAlbums -> Artist -> ( Grouping, List Album ) -> Html Msg
+displayGrouping starredAlbums artist ( grouping, albums ) =
     div [ class "grouping" ]
         (div [ class "grouping-name" ]
             [ a [ id (makeId grouping.name), href ("#" ++ artist.id) ]
                 [ text grouping.name ]
             ]
-            :: List.map displayAlbum albums
+            :: List.map (displayAlbum starredAlbums) albums
         )
 
 
-displayAlbum : Album -> Html Msg
-displayAlbum album =
+displayAlbum : StarredAlbums -> Album -> Html Msg
+displayAlbum starredAlbums album =
     let
         imageLink =
-          case album.spotify of
-            Just id -> [ href ("spotify:album:" ++ id) ]
-            Nothing -> []
+            case album.spotify of
+                Just id ->
+                    [ href ("spotify:album:" ++ id) ]
+
+                Nothing ->
+                    []
+
+        starAttrs =
+            [ class "star", onClick (ToggleStarred album.cover) ]
+
+        star =
+            if Set.member album.cover starredAlbums then
+                div (starAttrs ++ [ class "starred" ])
+                    [ img [ src "resources/star-solid.svg" ] [] ]
+
+            else
+                div starAttrs [ img [ src "resources/star-regular.svg" ] [] ]
     in
     div
-        [ class "album"
-        ]
+        [ class "album" ]
         [ a imageLink
             [ img
                 [ src ("data/covers/" ++ album.cover)
@@ -601,6 +660,7 @@ displayAlbum album =
                 ]
                 []
             ]
+        , star
         , div [ class "icon-bar" ] (putIcons album)
         ]
 
