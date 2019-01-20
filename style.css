@@ -1,0 +1,165 @@
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: normal;
+  src: url(resources/SourceSansPro-Regular.otf.woff); }
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: 200;
+  src: url(resources/SourceSansPro-ExtraLight.otf.woff); }
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: 300;
+  src: url(resources/SourceSansPro-Light.otf.woff); }
+@font-face {
+  font-family: SourceSansPro;
+  font-weight: 600;
+  src: url(resources/SourceSansPro-Semibold.otf.woff); }
+*:focus {
+  outline: none; }
+
+body {
+  color: #abb2bf;
+  background-color: #282c34;
+  font-family: SourceSansPro, sans-serif;
+  margin: 0; }
+
+header {
+  margin: 10px 35px 0 35px; }
+
+main {
+  display: flex;
+  flex-flow: row wrap;
+  margin: 40px 0 0 0;
+  padding: 40px 10px 20px 0;
+  border-top: 1px solid #5c6370;
+  border-bottom: 1px solid #5c6370; }
+
+footer {
+  color: #5c6370;
+  text-align: center;
+  vertical-align: center;
+  margin: 30px 0 35px 0; }
+
+img {
+  display: block;
+  margin: 0;
+  border: 1px solid #383c42; }
+
+a {
+  text-decoration: none;
+  color: inherit; }
+
+.artist-list {
+  margin: 20px 0 0 0;
+  display: flex;
+  flex-flow: row wrap; }
+  .artist-list .artist-list-letter, .artist-list .artist-list-name {
+    margin: 0 15px 0 0; }
+  .artist-list .artist-list-letter {
+    color: #c18401; }
+
+.artist {
+  margin: 0 0 20px 40px; }
+
+.artist-name {
+  color: #c18401;
+  font-size: 36px;
+  font-weight: 200;
+  margin: 0 24px 0 0; }
+
+.album-container {
+  margin: 12px 0 0 0; }
+
+.grouping-links {
+  display: inline; }
+
+.grouping-link {
+  color: #c18401;
+  margin: 0 0 0 20px;
+  font-size: 15px; }
+
+.grouping {
+  display: inline-block; }
+  .grouping .album {
+    display: inline-block; }
+
+.grouping-name {
+  display: inline-block;
+  vertical-align: top;
+  color: #c18401;
+  font-size: 22px;
+  font-weight: 300;
+  margin: 30px 24px 0 0;
+  min-width: 222px;
+  text-align: right; }
+
+.album {
+  display: inline-block;
+  margin: 0 24px 22px 0;
+  position: relative; }
+
+.album:hover .icon-bar {
+  display: block; }
+
+.star {
+  display: none;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 3px 2px 2px 2px;
+  border-bottom-left-radius: 8px; }
+  .star img {
+    border: none; }
+
+.album:hover .star {
+  display: block;
+  background-color: rgba(40, 44, 52, 0.85); }
+
+.star.starred {
+  display: block;
+  background-color: rgba(40, 44, 52, 0.75); }
+
+.icon-bar {
+  display: none;
+  background-color: rgba(40, 44, 52, 0.85);
+  position: absolute;
+  bottom: 0px;
+  height: 22px;
+  padding: 5px 0 2px;
+  width: 100%;
+  color: #abb2bf;
+  font-size: 13px;
+  font-weight: 600; }
+
+.icon {
+  display: inline-block;
+  text-transform: lowercase;
+  float: left;
+  margin: 0 0 5px 5px; }
+
+.icon > a {
+  user-select: none;
+  -webkit-user-select: none; }
+
+.icon-local > a, .icon-archived > a {
+  pointer-events: none; }
+
+.icon-local {
+  color: #e06c75; }
+
+.icon-spotify {
+  color: #98c379; }
+
+.icon-qobuz {
+  color: #61afef; }
+
+.icon-booklet {
+  color: #c678dd; }
+
+.icon-archived {
+  color: #abb2bf;
+  float: right;
+  margin-right: 5px; }

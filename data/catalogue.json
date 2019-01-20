@@ -1,0 +1,381 @@
+{
+  "config": {
+    "selectedGenre": "classical"
+  },
+  "genres": {
+    "classical": { "name": "Classical", "sortKey": "classical" },
+    "jazz": { "name": "Jazz", "sortKey": "jazz" }
+  },
+  "artists": {
+    "schubert": { "name": "Franz Schubert", "sortKey": "Schubert Franz" },
+    "lars-danielsson": { "name": "Lars Danielsson", "sortKey": "Danielsson Lars" },
+    "leszek-mozdzer": { "name": "Leszek Możdżer", "sortKey": "Możdżer Leszek" },
+    "Michel Petrucciani": { "name": "Michel Petrucciani", "sortKey": "Petrucciani Michel" },
+    "miles-davis": { "name": "Miles Davis", "sortKey": "Davis Miles" },
+    "Enrico Pieranunzi": { "name": "Enrico Pieranunzi", "sortKey": "Pieranunzi Enrico" },
+    "Charlie Haden": { "name": "Charlie Haden", "sortKey": "Haden Charlie" },
+    "Chris Anderson": { "name": "Chris Anderson", "sortKey": "Anderson Chris" },
+    "Chick Corea": { "name": "Chick Corea", "sortKey": "Corea Chick" },
+    "Gregory Porter": { "name": "Gregory Porter", "sortKey": "Porter Gregory" },
+    "Hank Jones": { "name": "Hank Jones", "sortKey": "Jones Hank" },
+    "Brad Mehldau": { "name": "Brad Mehldau", "sortKey": "Mehldau Brad" },
+    "Bill Evans": { "name": "Bill Evans", "sortKey": "Evans Bill" },
+    "Kenny Wheeler": { "name": "Kenny Wheeler", "sortKey": "Wheeler Kenny" },
+    "Paolo Fresu": { "name": "Paolo Fresu", "sortKey": "Fresu Paolo" }
+  },
+  "albums": [
+    {
+      "cover": "spotify/7KOGT89lKdtNopWnvBWYzz.jpeg",
+      "spotify": "7KOGT89lKdtNopWnvBWYzz",
+      "entries": [
+        { "genre": "jazz", "artist": "lars-danielsson" }
+      ],
+      "comment": "Tarantella"
+    },
+    {
+      "cover": "spotify/4UpKHVFOMxH6z3DvOcRkPP.jpeg",
+      "spotify": "4UpKHVFOMxH6z3DvOcRkPP",
+      "entries": [
+        { "genre": "jazz", "artist": "lars-danielsson" }
+      ],
+      "comment": "Liberetto"
+    },
+    {
+      "cover": "spotify/4xseZh6RlkT8d1RePNfFPU.jpeg",
+      "spotify": "4xseZh6RlkT8d1RePNfFPU",
+      "entries": [
+        { "genre": "jazz", "artist": "lars-danielsson" },
+        { "genre": "jazz", "artist": "leszek-mozdzer" }
+      ],
+      "comment": "Pasodoble"
+    },
+    {
+      "cover": "spotify/4sb0eMpDn3upAFfyi4q2rw.jpeg",
+      "spotify": "4sb0eMpDn3upAFfyi4q2rw",
+      "entries": [
+        { "genre": "jazz", "artist": "miles-davis" }
+      ],
+      "comment": "Kind of blue"
+    },
+    {
+      "cover": "spotify/5ufqOq0QvMNnlexELRazNO.jpeg",
+      "spotify": "5ufqOq0QvMNnlexELRazNO",
+      "entries": [
+        { "genre": "jazz", "artist": "miles-davis" }
+      ],
+      "comment": "Seven steps to heaven"
+    },
+    {
+      "cover": "spotify/7AdslY5pTUbuMqeVDsAG5u.jpeg",
+      "spotify": "7AdslY5pTUbuMqeVDsAG5u",
+      "entries": [
+        { "genre": "jazz", "artist": "Paolo Fresu" }
+      ],
+      "comment": "30"
+    },
+    {
+      "cover": "spotify/51gnZiO22o4MXivfVvvitw.jpeg",
+      "spotify": "51gnZiO22o4MXivfVvvitw",
+      "entries": [
+        { "genre": "jazz", "artist": "Michel Petrucciani" }
+      ],
+      "comment": "Pianism"
+    },
+    {
+      "cover": "spotify/4nsFVlrtJhSGGPAoSrzwk3.jpeg",
+      "spotify": "4nsFVlrtJhSGGPAoSrzwk3",
+      "entries": [
+        { "genre": "jazz", "artist": "Michel Petrucciani" }
+      ],
+      "comment": "Michel plays Petrucciani"
+    },
+    {
+      "cover": "spotify/3SDdp0ZtJvnfCyozg19kvt.jpeg",
+      "spotify": "3SDdp0ZtJvnfCyozg19kvt",
+      "entries": [
+        { "genre": "jazz", "artist": "Michel Petrucciani" }
+      ],
+      "comment": "Power of three"
+    },
+    {
+      "cover": "spotify/4IrMhDcPVVUMAxDbCUv8Le.jpeg",
+      "spotify": "4IrMhDcPVVUMAxDbCUv8Le",
+      "entries": [
+        { "genre": "jazz", "artist": "Michel Petrucciani" }
+      ],
+      "comment": "Playground"
+    },
+    {
+      "cover": "spotify/2PqqpbrJ15GmtSOwdRgjuY.jpeg",
+      "spotify": "2PqqpbrJ15GmtSOwdRgjuY",
+      "entries": [
+        { "genre": "jazz", "artist": "Michel Petrucciani" }
+      ],
+      "comment": "Trio in Tokyo"
+    },
+    {
+      "cover": "spotify/2MEki2Ssta3x8ZG3gbNGPM.jpeg",
+      "spotify": "2MEki2Ssta3x8ZG3gbNGPM",
+      "entries": [
+        { "genre": "jazz", "artist": "Enrico Pieranunzi" }
+      ],
+      "comment": "Permutation"
+    },
+    {
+      "cover": "spotify/3tqyaqZKt8DqKs2PqDzZjZ.jpeg",
+      "spotify": "3tqyaqZKt8DqKs2PqDzZjZ",
+      "entries": [
+        { "genre": "jazz", "artist": "Enrico Pieranunzi" }
+      ],
+      "comment": "Live at the Village Vanguard"
+    },
+    {
+      "cover": "spotify/2StpPzaiVU6HrOzmnQRSSR.jpeg",
+      "spotify": "2StpPzaiVU6HrOzmnQRSSR",
+      "entries": [
+        { "genre": "jazz", "artist": "Enrico Pieranunzi" }
+      ],
+      "comment": "Fellinijazz"
+    },
+    {
+      "cover": "spotify/3AIPq30cOmfWnDQgc1OHxI.jpeg",
+      "spotify": "3AIPq30cOmfWnDQgc1OHxI",
+      "entries": [
+        { "genre": "jazz", "artist": "Charlie Haden" },
+        { "genre": "jazz", "artist": "Chris Anderson" }
+      ],
+      "comment": "None but..."
+    },
+    {
+      "cover": "spotify/5TI8dGwbWmGyWyY5NCIhwj.jpeg",
+      "spotify": "5TI8dGwbWmGyWyY5NCIhwj",
+      "entries": [
+        { "genre": "jazz", "artist": "Kenny Wheeler" }
+      ],
+      "comment": "One of many"
+    },
+    {
+      "cover": "spotify/3HZkHYUGpY2AVNfK8BOdjh.jpeg",
+      "spotify": "3HZkHYUGpY2AVNfK8BOdjh",
+      "entries": [
+        { "genre": "jazz", "artist": "Brad Mehldau" }
+      ],
+      "comment": "Elegiac cycle"
+    },
+    {
+      "cover": "spotify/4XrD4Ta5YWbmJ1O1I4qnS9.jpeg",
+      "spotify": "4XrD4Ta5YWbmJ1O1I4qnS9",
+      "entries": [
+        { "genre": "jazz", "artist": "Brad Mehldau" }
+      ],
+      "comment": "Art of the trio Songs"
+    },
+    {
+      "cover": "spotify/0c1xfh8IwwwxK0f5yiMt6o.jpeg",
+      "spotify": "0c1xfh8IwwwxK0f5yiMt6o",
+      "entries": [
+        { "genre": "jazz", "artist": "Brad Mehldau" }
+      ],
+      "comment": "Art of the trio Vanguard"
+    },
+    {
+      "cover": "spotify/0EqCSbnumKLDmnPOcpstn1.jpeg",
+      "spotify": "0EqCSbnumKLDmnPOcpstn1",
+      "entries": [
+        { "genre": "jazz", "artist": "Brad Mehldau" }
+      ],
+      "comment": "Places"
+    },
+    {
+      "cover": "spotify/7gUnO0i9WmSSHh2CDpmdlr.jpeg",
+      "spotify": "7gUnO0i9WmSSHh2CDpmdlr",
+      "entries": [
+        { "genre": "jazz", "artist": "Chick Corea" }
+      ],
+      "comment": "Further explorations"
+    },
+    {
+      "local": true,
+      "archived": true,
+      "cover": "spotify/6FSgsN5ROADI1YQOieljKD.jpeg",
+      "spotify": "6FSgsN5ROADI1YQOieljKD",
+      "qobuz": "3610153652918",
+      "entries": [
+        { "genre": "jazz", "artist": "Bill Evans" }
+      ],
+      "comment": "Sunday at the Village Vanguard"
+    },
+    {
+      "local": true,
+      "archived": true,
+      "cover": "spotify/6UP9aVYTDasrzPsARQoo3M.jpeg",
+      "spotify": "6UP9aVYTDasrzPsARQoo3M",
+      "entries": [
+        { "genre": "jazz", "artist": "Bill Evans" }
+      ],
+      "comment": "Explorations"
+    },
+    {
+      "cover": "spotify/4HVY2UGhxlZseyDu3EqcQc.jpeg",
+      "spotify": "4HVY2UGhxlZseyDu3EqcQc",
+      "booklet": "gregory-porter-liquid-spirit.pdf",
+      "entries": [
+        { "genre": "jazz", "artist": "Gregory Porter" }
+      ],
+      "comment": "Liquid spirit"
+    },
+    {
+      "cover": "spotify/3wEGoOVY0xV11lKstQau2z.jpeg",
+      "spotify": "3wEGoOVY0xV11lKstQau2z",
+      "entries": [
+        { "genre": "jazz", "artist": "Charlie Haden" },
+        { "genre": "jazz", "artist": "Hank Jones" }
+      ],
+      "comment": "Steal away"
+    },
+    {
+      "cover": "spotify/2NHJtAvHTWxsiedQBlXlEH.jpeg",
+      "spotify": "2NHJtAvHTWxsiedQBlXlEH",
+      "entries": [
+        { "genre": "jazz", "artist": "Gregory Porter" }
+      ],
+      "comment": "Be good"
+    },
+    {
+      "cover": "spotify/0qG9UBPDPrXuqiEQ18lsbP.jpeg",
+      "spotify": "0qG9UBPDPrXuqiEQ18lsbP",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Winterreise" }
+      ],
+      "comment": "Winterreise Goerne Eschenbach"
+    },
+    {
+      "cover": "spotify/07XyPwS2IT2xAY1UdYi8qX.jpeg",
+      "spotify": "07XyPwS2IT2xAY1UdYi8qX",
+      "entries": [
+        { "genre": "classical", "artist": "schubert" }
+      ],
+      "comment": "9 Fischer"
+    },
+    {
+      "cover": "spotify/7GOKokAFsm5wf8fhaUNs73.jpeg",
+      "spotify": "7GOKokAFsm5wf8fhaUNs73",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Lieder" }
+      ],
+      "comment": "Abendbilder Gerhaher"
+    },
+    {
+      "cover": "spotify/0RoduKAMqlXAh9WvWGAT8S.jpeg",
+      "spotify": "0RoduKAMqlXAh9WvWGAT8S",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Lieder" }
+      ],
+      "comment": "Goethe Pregardien"
+    },
+    {
+      "cover": "spotify/2Ofr7H6uk9wz82vVDRMuNb.jpeg",
+      "spotify": "2Ofr7H6uk9wz82vVDRMuNb",
+      "entries": [
+        { "genre": "classical", "artist": "schubert" }
+      ],
+      "comment": "Hommage Berg Quartett"
+    },
+    {
+      "cover": "spotify/5ORs9or9d7BWqjDpt5TNbs.jpeg",
+      "spotify": "5ORs9or9d7BWqjDpt5TNbs",
+      "entries": [
+        { "genre": "classical", "artist": "schubert" }
+      ],
+      "comment": "Lucchesini"
+    },
+    {
+      "cover": "spotify/75FLI9gOqCWlrwAtzML9fq.jpeg",
+      "spotify": "75FLI9gOqCWlrwAtzML9fq",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Die schöne Müllerin", "groupingSortKey": "schöne Müllerin" }
+      ],
+      "comment": "Mullerin Pregardien Gees"
+    },
+    {
+      "cover": "spotify/6yoRcpaJg7A8UlS8aEqmT0.jpeg",
+      "spotify": "6yoRcpaJg7A8UlS8aEqmT0",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Die schöne Müllerin", "groupingSortKey": "schöne Müllerin" }
+      ],
+      "comment": "Mullerin Pregardien Staier"
+    },
+    {
+      "cover": "spotify/02A7I7qgO21eV9vei5ki12.jpeg",
+      "spotify": "02A7I7qgO21eV9vei5ki12",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Die schöne Müllerin", "groupingSortKey": "schöne Müllerin" }
+      ],
+      "comment": "Müllerin Gerhaher"
+    },
+    {
+      "cover": "spotify/7yaZu0let3lFO4GR4y7lda.jpeg",
+      "spotify": "7yaZu0let3lFO4GR4y7lda",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Die schöne Müllerin", "groupingSortKey": "schöne Müllerin" }
+      ],
+      "comment": "Müllerin Padmore"
+    },
+    {
+      "cover": "spotify/29C66qEZ16UnlwStJfDJ0k.jpeg",
+      "spotify": "29C66qEZ16UnlwStJfDJ0k",
+      "entries": [
+        { "genre": "classical", "artist": "schubert" }
+      ],
+      "comment": "Perahia"
+    },
+    {
+      "cover": "spotify/2cyabS415afYmMtMQX1L9K.jpeg",
+      "spotify": "2cyabS415afYmMtMQX1L9K",
+      "entries": [
+        { "genre": "classical", "artist": "schubert" }
+      ],
+      "comment": "Quartetto Artemis"
+    },
+    {
+      "cover": "spotify/5x0YHR8SWTgnKioVTPNIco.jpeg",
+      "spotify": "5x0YHR8SWTgnKioVTPNIco",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Schwanengesang" }
+      ],
+      "comment": "Schwanengesang Gerhaher"
+    },
+    {
+      "cover": "spotify/2F1bDVbAE8mAOoqIChVHZn.jpeg",
+      "spotify": "2F1bDVbAE8mAOoqIChVHZn",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Schwanengesang" }
+      ],
+      "comment": "Schwanengesang Pregardien"
+    },
+    {
+      "cover": "spotify/3g3tcErIZlukwYUAg5wkVa.jpeg",
+      "spotify": "3g3tcErIZlukwYUAg5wkVa",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Winterreise" }
+      ],
+      "comment": "Winterreise Boesch"
+    },
+    {
+      "cover": "spotify/7xQz99zOfxC5p2GoHw1mz7.jpeg",
+      "spotify": "7xQz99zOfxC5p2GoHw1mz7",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Winterreise" }
+      ],
+      "comment": "Winterreise Bostridge"
+    },
+    {
+      "cover": "spotify/0FO1kgLFdTpwjz1WqVd10f.jpeg",
+      "spotify": "0FO1kgLFdTpwjz1WqVd10f",
+      "entries": [
+        { "genre": "classical", "artist": "schubert", "grouping": "Winterreise" }
+      ],
+      "comment": "Winterreise Padmore"
+    }
+  ]
+}
