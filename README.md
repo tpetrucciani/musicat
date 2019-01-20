@@ -1,7 +1,7 @@
 This is a web UI to display a catalogue of music albums, possibly with links to streaming services (currently Spotify and Qobuz are supported).
 
 See an example [here](https://tpetrucciani.github.io/musicat)
-(using [this](https://tpetrucciani.github.io/musicat/catalogue.json) catalogue file).
+(using [this](https://tpetrucciani.github.io/musicat/data/catalogue.json) catalogue file).
 
 The catalogue is stored as a JSON file and covers for each album are stored in a folder. For now, these must be added/edited by hand; I'll then work on a script to make this faster. The files should be organized as
 
