@@ -72,7 +72,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( Loading
     , Http.get
-        { url = "/data/catalogue.json"
+        { url = "data/catalogue.json"
         , expect = Http.expectJson GotCatalogue catalogueDecoder
         }
     )
