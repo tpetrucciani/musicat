@@ -40,11 +40,16 @@ type alias State =
     , albumsByGenreAndArtist :
         Dict GenreId (List ( Artist, AlbumsForGenreAndArtist ))
     , viewOptions : ViewOptions
+    , starredAlbums : StarredAlbums
     }
 
 
 type alias AlbumsForGenreAndArtist =
     ( List Album, List ( Grouping, List Album ) )
+
+
+type alias StarredAlbums =
+    Set String
 
 
 type alias ViewOptions =
@@ -85,6 +90,7 @@ init _ =
 type Msg
     = GotCatalogue (Result Http.Error Catalogue)
     | SetView SetViewMsg
+    | ToggleStarred String
 
 
 type SetViewMsg
@@ -125,6 +131,20 @@ update msg model =
 
                         newState =
                             { state | viewOptions = newViewOptions }
+                    in
+                    ( Success newState, Cmd.none )
+
+                ToggleStarred id ->
+                    let
+                        newStarredAlbums =
+                            if Set.member id state.starredAlbums then
+                                Set.remove id state.starredAlbums
+
+                            else
+                                Set.insert id state.starredAlbums
+
+                        newState =
+                            { state | starredAlbums = newStarredAlbums }
                     in
                     ( Success newState, Cmd.none )
 
@@ -219,6 +239,7 @@ makeState catalogue =
         , archiveVisibility = OnlyUnarchived
         , visibleSources = [ Local, Spotify, Qobuz, Missing ]
         }
+    , starredAlbums = Set.fromList []
     }
 
 
@@ -288,7 +309,7 @@ viewBody model =
                 , displayArtistList visibleAlbumsByArtist
                 ]
             , Html.main_ []
-                (List.map (displayArtist state.catalogue) visibleAlbumsByArtist)
+                (List.map (displayArtist state) visibleAlbumsByArtist)
             , Html.footer []
                 [ text
                     ("Colours based on the Atom One themes. "
@@ -542,18 +563,20 @@ artistName catalogue artist =
     artist.name
 
 
-displayArtist : Catalogue -> ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
-displayArtist catalogue ( artist, ( albumsNoGrp, albumsByGrp ) ) =
+displayArtist : State -> ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
+displayArtist state ( artist, ( albumsNoGrp, albumsByGrp ) ) =
     let
         contents =
             [ a [ class "artist-name", id artist.id, href "#top" ]
-                [ text (artistName catalogue artist) ]
+                [ text (artistName state.catalogue artist) ]
             , div
                 [ class "grouping-links" ]
                 (List.map (displayGroupingLink << Tuple.first) albumsByGrp)
             , div [ class "album-container" ]
-                (List.map displayAlbum albumsNoGrp
-                    ++ List.map (displayGrouping artist) albumsByGrp
+                (List.map (displayAlbum state.starredAlbums) albumsNoGrp
+                    ++ List.map
+                        (displayGrouping state.starredAlbums artist)
+                        albumsByGrp
                 )
             ]
     in
@@ -571,28 +594,41 @@ displayGroupingLink grouping =
         [ text grouping.name ]
 
 
-displayGrouping : Artist -> ( Grouping, List Album ) -> Html Msg
-displayGrouping artist ( grouping, albums ) =
+displayGrouping : StarredAlbums -> Artist -> ( Grouping, List Album ) -> Html Msg
+displayGrouping starredAlbums artist ( grouping, albums ) =
     div [ class "grouping" ]
         (div [ class "grouping-name" ]
             [ a [ id (makeId grouping.name), href ("#" ++ artist.id) ]
                 [ text grouping.name ]
             ]
-            :: List.map displayAlbum albums
+            :: List.map (displayAlbum starredAlbums) albums
         )
 
 
-displayAlbum : Album -> Html Msg
-displayAlbum album =
+displayAlbum : StarredAlbums -> Album -> Html Msg
+displayAlbum starredAlbums album =
     let
         imageLink =
-          case album.spotify of
-            Just id -> [ href ("spotify:album:" ++ id) ]
-            Nothing -> []
+            case album.spotify of
+                Just id ->
+                    [ href ("spotify:album:" ++ id) ]
+
+                Nothing ->
+                    []
+
+        starAttrs =
+            [ class "star", onClick (ToggleStarred album.cover) ]
+
+        star =
+            if Set.member album.cover starredAlbums then
+                div (starAttrs ++ [ class "starred" ])
+                    [ img [ src "resources/star-solid.svg" ] [] ]
+
+            else
+                div starAttrs [ img [ src "resources/star-regular.svg" ] [] ]
     in
     div
-        [ class "album"
-        ]
+        [ class "album" ]
         [ a imageLink
             [ img
                 [ src ("data/covers/" ++ album.cover)
@@ -601,6 +637,7 @@ displayAlbum album =
                 ]
                 []
             ]
+        , star
         , div [ class "icon-bar" ] (putIcons album)
         ]
 
