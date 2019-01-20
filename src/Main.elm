@@ -584,15 +584,23 @@ displayGrouping artist ( grouping, albums ) =
 
 displayAlbum : Album -> Html Msg
 displayAlbum album =
+    let
+        imageLink =
+          case album.spotify of
+            Just id -> [ href ("spotify:album:" ++ id) ]
+            Nothing -> []
+    in
     div
         [ class "album"
         ]
-        [ img
-            [ src ("data/covers/" ++ album.cover)
-            , Html.Attributes.width 220
-            , Html.Attributes.height 220
+        [ a imageLink
+            [ img
+                [ src ("data/covers/" ++ album.cover)
+                , Html.Attributes.width 220
+                , Html.Attributes.height 220
+                ]
+                []
             ]
-            []
         , div [ class "icon-bar" ] (putIcons album)
         ]
 
