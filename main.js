@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region._.K === region.af.K)
+	if (region.ab.M === region.ah.M)
 	{
-		return 'on line ' + region._.K;
+		return 'on line ' + region.ab.M;
 	}
-	return 'on lines ' + region._.K + ' through ' + region.af.K;
+	return 'on lines ' + region.ab.M + ' through ' + region.ah.M;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aZ,
+		impl.a$,
+		impl.bg,
 		impl.be,
-		impl.bc,
 		function() { return function() {} }
 	);
 });
@@ -2321,25 +2321,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.aQ.a(response)));
+			callback(toTask(request.aS.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done(elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done(elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aQ.b, xhr)); });
-		elm$core$Maybe$isJust(request.j) && _Http_track(router, xhr, request.j.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aS.b, xhr)); });
+		elm$core$Maybe$isJust(request.k) && _Http_track(router, xhr, request.k.a);
 
 		try {
-			xhr.open(request.h, request.bf, true);
+			xhr.open(request.h, request.bh, true);
 		} catch (e) {
-			return done(elm$http$Http$BadUrl_(request.bf));
+			return done(elm$http$Http$BadUrl_(request.bh));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.aJ.a && xhr.setRequestHeader('Content-Type', request.aJ.a);
-		xhr.send(request.aJ.b);
+		request.aL.a && xhr.setRequestHeader('Content-Type', request.aL.a);
+		xhr.send(request.aL.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -2355,8 +2355,8 @@ function _Http_configureRequest(xhr, request)
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
 	xhr.timeout = request.i.a || 0;
-	xhr.responseType = request.aQ.d;
-	xhr.withCredentials = request.z;
+	xhr.responseType = request.aS.d;
+	xhr.withCredentials = request.A;
 }
 
 
@@ -2377,9 +2377,9 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		bf: xhr.responseURL,
-		az: xhr.status,
-		ba: xhr.statusText,
+		bh: xhr.responseURL,
+		aB: xhr.status,
+		bc: xhr.statusText,
 		e: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
@@ -2475,15 +2475,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Sending({
-			a8: event.loaded,
-			Z: event.total
+			ba: event.loaded,
+			aa: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Receiving({
-			a5: event.loaded,
-			Z: event.lengthComputable ? elm$core$Maybe$Just(event.total) : elm$core$Maybe$Nothing
+			a7: event.loaded,
+			aa: event.lengthComputable ? elm$core$Maybe$Just(event.total) : elm$core$Maybe$Nothing
 		}))));
 	});
 }
@@ -2834,9 +2834,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		q: func(record.q),
-		aa: record.aa,
-		X: record.X
+		r: func(record.r),
+		ac: record.ac,
+		Z: record.Z
 	}
 });
 
@@ -3104,11 +3104,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.q;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.aa;
+		var message = !tag ? value : tag < 3 ? value.a : value.r;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.ac;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.X) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.Z) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -4058,11 +4058,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aZ,
+		impl.a$,
+		impl.bg,
 		impl.be,
-		impl.bc,
 		function(sendToApp, initialModel) {
-			var view = impl.bg;
+			var view = impl.bi;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -4094,12 +4094,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aZ,
+		impl.a$,
+		impl.bg,
 		impl.be,
-		impl.bc,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.L && impl.L(sendToApp)
-			var view = impl.bg;
+			var divertHrefToApp = impl.N && impl.N(sendToApp)
+			var view = impl.bi;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4107,12 +4107,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aJ);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aL);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.bd) && (_VirtualDom_doc.title = title = doc.bd);
+				(title !== doc.bf) && (_VirtualDom_doc.title = title = doc.bf);
 			});
 		}
 	);
@@ -4168,12 +4168,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.a1;
-	var onUrlRequest = impl.a2;
+	var onUrlChange = impl.a3;
+	var onUrlRequest = impl.a4;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		L: function(sendToApp)
+		N: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4189,9 +4189,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.as === next.as
-							&& curr.ai === next.ai
-							&& curr.ap.a === next.ap.a
+							&& curr.au === next.au
+							&& curr.ak === next.ak
+							&& curr.ar.a === next.ar.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4199,13 +4199,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aZ: function(flags)
+		a$: function(flags)
 		{
-			return A3(impl.aZ, flags, _Browser_getUrl(), key);
+			return A3(impl.a$, flags, _Browser_getUrl(), key);
 		},
+		bi: impl.bi,
 		bg: impl.bg,
-		be: impl.be,
-		bc: impl.bc
+		be: impl.be
 	});
 }
 
@@ -4271,17 +4271,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aW: 'hidden', aL: 'visibilitychange' }
+		? { aY: 'hidden', aN: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aW: 'mozHidden', aL: 'mozvisibilitychange' }
+		? { aY: 'mozHidden', aN: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aW: 'msHidden', aL: 'msvisibilitychange' }
+		? { aY: 'msHidden', aN: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aW: 'webkitHidden', aL: 'webkitvisibilitychange' }
-		: { aW: 'hidden', aL: 'visibilitychange' };
+		? { aY: 'webkitHidden', aN: 'webkitvisibilitychange' }
+		: { aY: 'hidden', aN: 'visibilitychange' };
 }
 
 
@@ -4362,12 +4362,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		ay: _Browser_getScene(),
-		aC: {
-			R: _Browser_window.pageXOffset,
-			S: _Browser_window.pageYOffset,
-			H: _Browser_doc.documentElement.clientWidth,
-			C: _Browser_doc.documentElement.clientHeight
+		aA: _Browser_getScene(),
+		aE: {
+			T: _Browser_window.pageXOffset,
+			U: _Browser_window.pageYOffset,
+			J: _Browser_doc.documentElement.clientWidth,
+			D: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4377,8 +4377,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		H: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		C: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		J: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		D: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4401,15 +4401,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			ay: {
-				H: node.scrollWidth,
-				C: node.scrollHeight
+			aA: {
+				J: node.scrollWidth,
+				D: node.scrollHeight
 			},
-			aC: {
-				R: node.scrollLeft,
-				S: node.scrollTop,
-				H: node.clientWidth,
-				C: node.clientHeight
+			aE: {
+				T: node.scrollLeft,
+				U: node.scrollTop,
+				J: node.clientWidth,
+				D: node.clientHeight
 			}
 		};
 	});
@@ -4439,18 +4439,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			ay: _Browser_getScene(),
-			aC: {
-				R: x,
-				S: y,
-				H: _Browser_doc.documentElement.clientWidth,
-				C: _Browser_doc.documentElement.clientHeight
+			aA: _Browser_getScene(),
+			aE: {
+				T: x,
+				U: y,
+				J: _Browser_doc.documentElement.clientWidth,
+				D: _Browser_doc.documentElement.clientHeight
 			},
-			aO: {
-				R: x + rect.left,
-				S: y + rect.top,
-				H: rect.width,
-				C: rect.height
+			aQ: {
+				T: x + rect.left,
+				U: y + rect.top,
+				J: rect.width,
+				D: rect.height
 			}
 		};
 	});
@@ -4487,19 +4487,19 @@ function _Browser_load(url)
 }
 var author$project$Catalogue$Catalogue = F4(
 	function (genres, artists, albums, config) {
-		return {aE: albums, aI: artists, aM: config, aU: genres};
+		return {aG: albums, aK: artists, aO: config, aW: genres};
 	});
 var author$project$Catalogue$Album = F7(
 	function (cover, entries, qobuz, spotify, local, archived, booklet) {
-		return {aF: archived, aK: booklet, aN: cover, aP: entries, a_: local, a4: qobuz, a9: spotify};
+		return {aH: archived, aM: booklet, aP: cover, aR: entries, a0: local, a6: qobuz, bb: spotify};
 	});
 var author$project$Catalogue$Entry = F3(
 	function (genre, artist, grouping) {
-		return {aH: artist, aT: genre, aV: grouping};
+		return {aJ: artist, aV: genre, aX: grouping};
 	});
 var author$project$Catalogue$Grouping = F2(
 	function (name, sortKey) {
-		return {r: name, n: sortKey};
+		return {s: name, n: sortKey};
 	});
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
@@ -6502,11 +6502,11 @@ var author$project$Catalogue$albumDecoder = F2(
 	});
 var author$project$Catalogue$Artist = F4(
 	function (id, name, shortName, sortKey) {
-		return {U: id, r: name, Y: shortName, n: sortKey};
+		return {W: id, s: name, _: shortName, n: sortKey};
 	});
 var author$project$Catalogue$ArtistInfo = F3(
 	function (name, shortName, sortKey) {
-		return {r: name, Y: shortName, n: sortKey};
+		return {s: name, _: shortName, n: sortKey};
 	});
 var elm$core$Dict$map = F2(
 	function (func, dict) {
@@ -6537,8 +6537,8 @@ var elm$json$Json$Decode$dict = function (decoder) {
 var author$project$Catalogue$artistsDecoder = function () {
 	var artistInfoToArtist = F2(
 		function (id, _n0) {
-			var name = _n0.r;
-			var shortName = _n0.Y;
+			var name = _n0.s;
+			var shortName = _n0._;
 			var sortKey = _n0.n;
 			return A4(author$project$Catalogue$Artist, id, name, shortName, sortKey);
 		});
@@ -6562,7 +6562,7 @@ var author$project$Catalogue$artistsDecoder = function () {
 		elm$json$Json$Decode$dict(artistInfoDecoder));
 }();
 var author$project$Catalogue$Config = function (selectedGenre) {
-	return {a7: selectedGenre};
+	return {a9: selectedGenre};
 };
 var author$project$Catalogue$configDecoder = function (genres) {
 	return A2(
@@ -6570,23 +6570,23 @@ var author$project$Catalogue$configDecoder = function (genres) {
 		A2(
 			elm$core$Basics$composeR,
 			function ($) {
-				return $.U;
+				return $.W;
 			},
 			author$project$Catalogue$Config),
 		A2(author$project$Catalogue$stringFieldWithLookupInDict, 'selectedGenre', genres));
 };
 var author$project$Catalogue$Genre = F3(
 	function (id, name, sortKey) {
-		return {U: id, r: name, n: sortKey};
+		return {W: id, s: name, n: sortKey};
 	});
 var author$project$Catalogue$GenreInfo = F2(
 	function (name, sortKey) {
-		return {r: name, n: sortKey};
+		return {s: name, n: sortKey};
 	});
 var author$project$Catalogue$genresDecoder = function () {
 	var genreInfoToGenre = F2(
 		function (id, _n0) {
-			var name = _n0.r;
+			var name = _n0.s;
 			var sortKey = _n0.n;
 			return A3(author$project$Catalogue$Genre, id, name, sortKey);
 		});
@@ -7116,7 +7116,7 @@ var elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return elm$core$Result$Err(
-					elm$http$Http$BadStatus(metadata.az));
+					elm$http$Http$BadStatus(metadata.aB));
 			default:
 				var body = response.b;
 				return A2(
@@ -7146,7 +7146,7 @@ var elm$http$Http$Request = function (a) {
 var elm$core$Task$succeed = _Scheduler_succeed;
 var elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {av: reqs, aA: subs};
+		return {ax: reqs, aC: subs};
 	});
 var elm$http$Http$init = elm$core$Task$succeed(
 	A2(elm$http$Http$State, elm$core$Dict$empty, _List_Nil));
@@ -7191,7 +7191,7 @@ var elm$http$Http$updateReqs = F3(
 					return A2(
 						elm$core$Task$andThen,
 						function (pid) {
-							var _n4 = req.j;
+							var _n4 = req.k;
 							if (_n4.$ === 1) {
 								return A3(elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -7221,7 +7221,7 @@ var elm$http$Http$onEffects = F4(
 				return elm$core$Task$succeed(
 					A2(elm$http$Http$State, reqs, subs));
 			},
-			A3(elm$http$Http$updateReqs, router, cmds, state.av));
+			A3(elm$http$Http$updateReqs, router, cmds, state.ax));
 	});
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
@@ -7341,7 +7341,7 @@ var elm$http$Http$onSelfMsg = F3(
 				A2(
 					elm$core$List$filterMap,
 					A3(elm$http$Http$maybeSend, router, tracker, progress),
-					state.aA)));
+					state.aC)));
 	});
 var elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -7355,14 +7355,14 @@ var elm$http$Http$cmdMap = F2(
 			var r = cmd.a;
 			return elm$http$Http$Request(
 				{
-					z: r.z,
-					aJ: r.aJ,
-					aQ: A2(_Http_mapExpect, func, r.aQ),
+					A: r.A,
+					aL: r.aL,
+					aS: A2(_Http_mapExpect, func, r.aS),
 					e: r.e,
 					h: r.h,
 					i: r.i,
-					j: r.j,
-					bf: r.bf
+					k: r.k,
+					bh: r.bh
 				});
 		}
 	});
@@ -7385,19 +7385,19 @@ var elm$http$Http$subscription = _Platform_leaf('Http');
 var elm$http$Http$request = function (r) {
 	return elm$http$Http$command(
 		elm$http$Http$Request(
-			{z: false, aJ: r.aJ, aQ: r.aQ, e: r.e, h: r.h, i: r.i, j: r.j, bf: r.bf}));
+			{A: false, aL: r.aL, aS: r.aS, e: r.e, h: r.h, i: r.i, k: r.k, bh: r.bh}));
 };
 var elm$http$Http$get = function (r) {
 	return elm$http$Http$request(
-		{aJ: elm$http$Http$emptyBody, aQ: r.aQ, e: _List_Nil, h: 'GET', i: elm$core$Maybe$Nothing, j: elm$core$Maybe$Nothing, bf: r.bf});
+		{aL: elm$http$Http$emptyBody, aS: r.aS, e: _List_Nil, h: 'GET', i: elm$core$Maybe$Nothing, k: elm$core$Maybe$Nothing, bh: r.bh});
 };
 var author$project$Main$init = function (_n0) {
 	return _Utils_Tuple2(
 		author$project$Main$Loading,
 		elm$http$Http$get(
 			{
-				aQ: A2(elm$http$Http$expectJson, author$project$Main$GotCatalogue, author$project$Catalogue$catalogueDecoder),
-				bf: 'data/catalogue.json'
+				aS: A2(elm$http$Http$expectJson, author$project$Main$GotCatalogue, author$project$Catalogue$catalogueDecoder),
+				bh: 'data/catalogue.json'
 			}));
 };
 var elm$core$Platform$Sub$batch = _Platform_batch;
@@ -7510,13 +7510,23 @@ var elm$core$List$filter = F2(
 			list);
 	});
 var elm$core$List$sortBy = _List_sortBy;
+var elm$core$Set$Set_elm_builtin = elm$core$Basics$identity;
+var elm$core$Set$empty = elm$core$Dict$empty;
+var elm$core$Set$insert = F2(
+	function (key, _n0) {
+		var dict = _n0;
+		return A3(elm$core$Dict$insert, key, 0, dict);
+	});
+var elm$core$Set$fromList = function (list) {
+	return A3(elm$core$List$foldl, elm$core$Set$insert, elm$core$Set$empty, list);
+};
 var author$project$Main$makeState = function (catalogue) {
 	var artists = A2(
 		elm$core$List$sortBy,
 		function ($) {
 			return $.n;
 		},
-		catalogue.aI);
+		catalogue.aK);
 	var albumsForGenreAndArtist = F2(
 		function (genre, artist) {
 			var matchesGrouping = F2(
@@ -7524,13 +7534,13 @@ var author$project$Main$makeState = function (catalogue) {
 					return A2(
 						elm$core$List$any,
 						function (e) {
-							return _Utils_eq(e.aV, grouping);
+							return _Utils_eq(e.aX, grouping);
 						},
-						album.aP);
+						album.aR);
 				});
 			var matchesGenreArtist = F3(
 				function (g, a, entry) {
-					return _Utils_eq(entry.aT.U, g) && _Utils_eq(entry.aH, a);
+					return _Utils_eq(entry.aV.W, g) && _Utils_eq(entry.aJ, a);
 				});
 			var albums = A2(
 				elm$core$List$filter,
@@ -7538,9 +7548,9 @@ var author$project$Main$makeState = function (catalogue) {
 					return A2(
 						elm$core$List$any,
 						A2(matchesGenreArtist, genre, artist),
-						a.aP);
+						a.aR);
 				},
-				catalogue.aE);
+				catalogue.aG);
 			var albumsForGrouping = function (grouping) {
 				return A2(
 					elm$core$List$filter,
@@ -7559,9 +7569,9 @@ var author$project$Main$makeState = function (catalogue) {
 							return A2(
 								elm$core$List$filterMap,
 								function (e) {
-									return e.aV;
+									return e.aX;
 								},
-								a.aP);
+								a.aR);
 						},
 						albums)));
 			return _Utils_Tuple2(
@@ -7589,27 +7599,30 @@ var author$project$Main$makeState = function (catalogue) {
 			A2(
 				elm$core$List$map,
 				function ($) {
-					return $.U;
+					return $.W;
 				},
 				A2(
 					elm$core$List$sortBy,
 					function ($) {
 						return $.n;
 					},
-					catalogue.aU))));
+					catalogue.aW))));
 	return {
-		T: albumsByGenreAndArtist,
-		Q: catalogue,
-		l: {
-			J: 0,
-			B: '',
-			aT: catalogue.aM.a7,
-			u: _List_fromArray(
+		V: albumsByGenreAndArtist,
+		S: catalogue,
+		o: elm$core$Set$fromList(_List_Nil),
+		j: {
+			L: 0,
+			C: '',
+			aV: catalogue.aO.a9,
+			E: false,
+			v: _List_fromArray(
 				[0, 1, 2, 3])
 		}
 	};
 };
 var elm$core$Basics$neq = _Utils_notEqual;
+var elm$core$Basics$not = _Basics_not;
 var elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -7626,30 +7639,53 @@ var author$project$Main$setView = F2(
 				var genre = viewMsg.a;
 				return _Utils_update(
 					viewOptions,
-					{aT: genre});
+					{aV: genre});
 			case 1:
 				var filter = viewMsg.a;
 				return _Utils_update(
 					viewOptions,
-					{B: filter});
+					{C: filter});
 			case 2:
 				var archiveVisibility = viewMsg.a;
 				return _Utils_update(
 					viewOptions,
-					{J: archiveVisibility});
-			default:
+					{L: archiveVisibility});
+			case 3:
 				var source = viewMsg.a;
-				var newVisibleSources = A2(elm$core$List$member, source, viewOptions.u) ? A2(
+				var newVisibleSources = A2(elm$core$List$member, source, viewOptions.v) ? A2(
 					elm$core$List$filter,
 					elm$core$Basics$neq(source),
-					viewOptions.u) : A2(elm$core$List$cons, source, viewOptions.u);
+					viewOptions.v) : A2(elm$core$List$cons, source, viewOptions.v);
 				return _Utils_update(
 					viewOptions,
-					{u: newVisibleSources});
+					{v: newVisibleSources});
+			default:
+				return _Utils_update(
+					viewOptions,
+					{E: !viewOptions.E});
 		}
 	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _n0 = A2(elm$core$Dict$get, key, dict);
+		if (!_n0.$) {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var elm$core$Set$member = F2(
+	function (key, _n0) {
+		var dict = _n0;
+		return A2(elm$core$Dict$member, key, dict);
+	});
+var elm$core$Set$remove = F2(
+	function (key, _n0) {
+		var dict = _n0;
+		return A2(elm$core$Dict$remove, key, dict);
+	});
 var author$project$Main$update = F2(
 	function (msg, model) {
 		switch (model.$) {
@@ -7681,17 +7717,27 @@ var author$project$Main$update = F2(
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 			default:
 				var state = model.a;
-				if (msg.$ === 1) {
-					var viewMsg = msg.a;
-					var newViewOptions = A2(author$project$Main$setView, viewMsg, state.l);
-					var newState = _Utils_update(
-						state,
-						{l: newViewOptions});
-					return _Utils_Tuple2(
-						author$project$Main$Success(newState),
-						elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				switch (msg.$) {
+					case 1:
+						var viewMsg = msg.a;
+						var newViewOptions = A2(author$project$Main$setView, viewMsg, state.j);
+						var newState = _Utils_update(
+							state,
+							{j: newViewOptions});
+						return _Utils_Tuple2(
+							author$project$Main$Success(newState),
+							elm$core$Platform$Cmd$none);
+					case 2:
+						var id = msg.a;
+						var newStarredAlbums = A2(elm$core$Set$member, id, state.o) ? A2(elm$core$Set$remove, id, state.o) : A2(elm$core$Set$insert, id, state.o);
+						var newState = _Utils_update(
+							state,
+							{o: newStarredAlbums});
+						return _Utils_Tuple2(
+							author$project$Main$Success(newState),
+							elm$core$Platform$Cmd$none);
+					default:
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 		}
 	});
@@ -7706,9 +7752,9 @@ var author$project$Main$SetView = function (a) {
 var author$project$Main$archiveVisibilityName = function (visibility) {
 	switch (visibility) {
 		case 0:
-			return 'Only unarchived';
+			return 'Unarchived';
 		case 1:
-			return 'Only archived';
+			return 'Archived';
 		default:
 			return 'Both';
 	}
@@ -7727,6 +7773,7 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 };
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
+var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$json$Json$Encode$bool = _Json_wrap;
@@ -7780,24 +7827,35 @@ var author$project$Main$box = F4(
 							elm$html$Html$Events$onClick(msg)
 						]),
 					_List_Nil),
-					elm$html$Html$text(name)
+					A2(
+					elm$html$Html$span,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(name)
+						]))
 				]));
 	});
 var author$project$Main$radio = author$project$Main$box('radio');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var author$project$Main$displayArchiveVisibilitySelector = function (state) {
 	var mkRadio = function (visibility) {
 		return A3(
 			author$project$Main$radio,
 			author$project$Main$SetView(
 				author$project$Main$ChangeArchiveVisibility(visibility)),
-			author$project$Main$archiveVisibilityName(visibility),
-			_Utils_eq(state.l.J, visibility));
+			elm$core$String$toLower(
+				author$project$Main$archiveVisibilityName(visibility)),
+			_Utils_eq(state.j.L, visibility));
 	};
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('archive-selector')
+			]),
 		_List_fromArray(
 			[
 				A2(
@@ -7812,8 +7870,11 @@ var author$project$Main$displayArchiveVisibilitySelector = function (state) {
 };
 var author$project$Main$artistName = F2(
 	function (catalogue, artist) {
-		return artist.r;
+		return artist.s;
 	});
+var author$project$Main$ToggleStarred = function (a) {
+	return {$: 2, a: a};
+};
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$href = function (url) {
@@ -7825,7 +7886,7 @@ var elm$html$Html$Attributes$href = function (url) {
 var elm$html$Html$Attributes$title = elm$html$Html$Attributes$stringProperty('title');
 var author$project$Main$putIcons = function (album) {
 	var spotifyIcon = function () {
-		var _n2 = album.a9;
+		var _n2 = album.bb;
 		if (!_n2.$) {
 			var id = _n2.a;
 			return _List_fromArray(
@@ -7857,7 +7918,7 @@ var author$project$Main$putIcons = function (album) {
 		}
 	}();
 	var qobuzIcon = function () {
-		var _n1 = album.a4;
+		var _n1 = album.a6;
 		if (!_n1.$) {
 			var id = _n1.a;
 			return _List_fromArray(
@@ -7888,7 +7949,7 @@ var author$project$Main$putIcons = function (album) {
 			return _List_Nil;
 		}
 	}();
-	var localIcon = album.a_ ? _List_fromArray(
+	var localIcon = album.a0 ? _List_fromArray(
 		[
 			A2(
 			elm$html$Html$div,
@@ -7912,7 +7973,7 @@ var author$project$Main$putIcons = function (album) {
 				]))
 		]) : _List_Nil;
 	var bookletIcon = function () {
-		var _n0 = album.aK;
+		var _n0 = album.aM;
 		if (!_n0.$) {
 			var path = _n0.a;
 			return _List_fromArray(
@@ -7943,7 +8004,7 @@ var author$project$Main$putIcons = function (album) {
 			return _List_Nil;
 		}
 	}();
-	var archivedIcon = album.aF ? _List_fromArray(
+	var archivedIcon = album.aH ? _List_fromArray(
 		[
 			A2(
 			elm$html$Html$div,
@@ -7989,73 +8050,96 @@ var elm$html$Html$Attributes$width = function (n) {
 		'width',
 		elm$core$String$fromInt(n));
 };
-var author$project$Main$displayAlbum = function (album) {
-	var imageLink = function () {
-		var _n0 = album.a9;
-		if (!_n0.$) {
-			var id = _n0.a;
-			return _List_fromArray(
-				[
-					elm$html$Html$Attributes$href('spotify:album:' + id)
-				]);
-		} else {
-			return _List_Nil;
-		}
-	}();
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
+var author$project$Main$displayAlbum = F2(
+	function (starredAlbums, album) {
+		var starAttrs = _List_fromArray(
 			[
-				elm$html$Html$Attributes$class('album')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$a,
-				imageLink,
+				elm$html$Html$Attributes$class('star'),
+				elm$html$Html$Events$onClick(
+				author$project$Main$ToggleStarred(album.aP))
+			]);
+		var star = A2(elm$core$Set$member, album.aP, starredAlbums) ? A2(
+			elm$html$Html$div,
+			_Utils_ap(
+				starAttrs,
 				_List_fromArray(
 					[
-						A2(
-						elm$html$Html$img,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$src('data/covers/' + album.aN),
-								elm$html$Html$Attributes$width(220),
-								elm$html$Html$Attributes$height(220)
-							]),
-						_List_Nil)
+						elm$html$Html$Attributes$class('starred')
 					])),
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$img,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$src('resources/star-solid.svg')
+						]),
+					_List_Nil)
+				])) : A2(
+			elm$html$Html$div,
+			starAttrs,
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$img,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$src('resources/star-regular.svg')
+						]),
+					_List_Nil)
+				]));
+		var imageLink = function () {
+			var _n0 = album.bb;
+			if (!_n0.$) {
+				var id = _n0.a;
+				return _List_fromArray(
 					[
-						elm$html$Html$Attributes$class('icon-bar')
-					]),
-				author$project$Main$putIcons(album))
-			]));
-};
+						elm$html$Html$Attributes$href('spotify:album:' + id)
+					]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('album')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$a,
+					imageLink,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$img,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$src('data/covers/' + album.aP),
+									elm$html$Html$Attributes$width(220),
+									elm$html$Html$Attributes$height(220)
+								]),
+							_List_Nil)
+						])),
+					star,
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('icon-bar')
+						]),
+					author$project$Main$putIcons(album))
+				]));
+	});
 var elm$core$Dict$singleton = F2(
 	function (key, value) {
 		return A5(elm$core$Dict$RBNode_elm_builtin, 1, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
 	});
-var elm$core$Set$Set_elm_builtin = elm$core$Basics$identity;
 var elm$core$Set$singleton = function (key) {
 	return A2(elm$core$Dict$singleton, key, 0);
 };
-var elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _n0 = A2(elm$core$Dict$get, key, dict);
-		if (!_n0.$) {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var elm$core$Set$member = F2(
-	function (key, _n0) {
-		var dict = _n0;
-		return A2(elm$core$Dict$member, key, dict);
-	});
 var elm$core$String$length = _String_length;
 var elm$core$String$slice = _String_slice;
 var elm$core$String$dropLeft = F2(
@@ -8132,9 +8216,8 @@ var kuon$elm_string_normalize$String$Normalize$url = function (str) {
 		str);
 };
 var author$project$Main$makeId = kuon$elm_string_normalize$String$Normalize$url;
-var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var author$project$Main$displayGrouping = F2(
-	function (artist, _n0) {
+var author$project$Main$displayGrouping = F3(
+	function (starredAlbums, artist, _n0) {
 		var grouping = _n0.a;
 		var albums = _n0.b;
 		return A2(
@@ -8158,15 +8241,18 @@ var author$project$Main$displayGrouping = F2(
 							_List_fromArray(
 								[
 									elm$html$Html$Attributes$id(
-									author$project$Main$makeId(grouping.r)),
-									elm$html$Html$Attributes$href('#' + artist.U)
+									author$project$Main$makeId(grouping.s)),
+									elm$html$Html$Attributes$href('#' + artist.W)
 								]),
 							_List_fromArray(
 								[
-									elm$html$Html$text(grouping.r)
+									elm$html$Html$text(grouping.s)
 								]))
 						])),
-				A2(elm$core$List$map, author$project$Main$displayAlbum, albums)));
+				A2(
+					elm$core$List$map,
+					author$project$Main$displayAlbum(starredAlbums),
+					albums)));
 	});
 var author$project$Main$displayGroupingLink = function (grouping) {
 	return A2(
@@ -8175,11 +8261,11 @@ var author$project$Main$displayGroupingLink = function (grouping) {
 			[
 				elm$html$Html$Attributes$class('grouping-link'),
 				elm$html$Html$Attributes$href(
-				'#' + author$project$Main$makeId(grouping.r))
+				'#' + author$project$Main$makeId(grouping.s))
 			]),
 		_List_fromArray(
 			[
-				elm$html$Html$text(grouping.r)
+				elm$html$Html$text(grouping.s)
 			]));
 };
 var elm$core$Basics$composeL = F3(
@@ -8188,7 +8274,7 @@ var elm$core$Basics$composeL = F3(
 			f(x));
 	});
 var author$project$Main$displayArtist = F2(
-	function (catalogue, _n0) {
+	function (state, _n0) {
 		var artist = _n0.a;
 		var _n1 = _n0.b;
 		var albumsNoGrp = _n1.a;
@@ -8200,13 +8286,13 @@ var author$project$Main$displayArtist = F2(
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$class('artist-name'),
-						elm$html$Html$Attributes$id(artist.U),
+						elm$html$Html$Attributes$id(artist.W),
 						elm$html$Html$Attributes$href('#top')
 					]),
 				_List_fromArray(
 					[
 						elm$html$Html$text(
-						A2(author$project$Main$artistName, catalogue, artist))
+						A2(author$project$Main$artistName, state.S, artist))
 					])),
 				A2(
 				elm$html$Html$div,
@@ -8225,10 +8311,13 @@ var author$project$Main$displayArtist = F2(
 						elm$html$Html$Attributes$class('album-container')
 					]),
 				_Utils_ap(
-					A2(elm$core$List$map, author$project$Main$displayAlbum, albumsNoGrp),
 					A2(
 						elm$core$List$map,
-						author$project$Main$displayGrouping(artist),
+						author$project$Main$displayAlbum(state.o),
+						albumsNoGrp),
+					A2(
+						elm$core$List$map,
+						A2(author$project$Main$displayGrouping, state.o, artist),
 						albumsByGrp)))
 			]);
 		return A2(
@@ -8244,7 +8333,6 @@ var elm$core$String$left = F2(
 		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
 	});
 var elm$core$String$toUpper = _String_toUpper;
-var elm$html$Html$span = _VirtualDom_node('span');
 var author$project$Main$displayArtistList = function (albumsByArtist) {
 	var makeName = function (artist) {
 		return A2(
@@ -8259,11 +8347,11 @@ var author$project$Main$displayArtistList = function (albumsByArtist) {
 					elm$html$Html$a,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$href('#' + artist.U)
+							elm$html$Html$Attributes$href('#' + artist.W)
 						]),
 					_List_fromArray(
 						[
-							elm$html$Html$text(artist.Y)
+							elm$html$Html$text(artist._)
 						]))
 				]));
 	};
@@ -8331,32 +8419,33 @@ var author$project$Main$SetGenre = function (a) {
 	return {$: 0, a: a};
 };
 var author$project$Main$displayGenres = function (state) {
-	var displayGenre = function (g) {
-		return A2(
-			elm$html$Html$a,
-			_List_fromArray(
-				[
-					elm$html$Html$Events$onClick(
-					author$project$Main$SetView(
-						author$project$Main$SetGenre(g.U)))
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text(g.r + ' ')
-				]));
+	var mkRadio = function (g) {
+		return A3(
+			author$project$Main$radio,
+			author$project$Main$SetView(
+				author$project$Main$SetGenre(g.W)),
+			elm$core$String$toLower(g.s),
+			_Utils_eq(state.j.aV, g.W));
 	};
+	var genres = A2(
+		elm$core$List$sortBy,
+		function ($) {
+			return $.n;
+		},
+		state.S.aW);
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
-		A2(
-			elm$core$List$map,
-			displayGenre,
-			A2(
-				elm$core$List$sortBy,
-				function ($) {
-					return $.n;
-				},
-				state.Q.aU)));
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('genres')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$fieldset,
+				_List_Nil,
+				A2(elm$core$List$map, mkRadio, genres))
+			]));
 };
 var author$project$Main$ChangeFilter = function (a) {
 	return {$: 1, a: a};
@@ -8398,15 +8487,18 @@ var elm$html$Html$Events$onInput = function (tagger) {
 var author$project$Main$displaySearchBar = function (state) {
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('searchbar')
+			]),
 		_List_fromArray(
 			[
 				A2(
 				elm$html$Html$input,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$placeholder('Filter'),
-						elm$html$Html$Attributes$value(state.l.B),
+						elm$html$Html$Attributes$placeholder('type to filter…'),
+						elm$html$Html$Attributes$value(state.j.C),
 						elm$html$Html$Events$onInput(
 						A2(elm$core$Basics$composeL, author$project$Main$SetView, author$project$Main$ChangeFilter)),
 						elm$html$Html$Attributes$autofocus(true),
@@ -8437,30 +8529,55 @@ var author$project$Main$displaySourceVisibilitySelector = function (state) {
 			author$project$Main$checkbox,
 			author$project$Main$SetView(
 				author$project$Main$ToggleSourceVisibility(s)),
-			author$project$Main$sourceName(s),
-			A2(elm$core$List$member, s, state.l.u));
+			elm$core$String$toLower(
+				author$project$Main$sourceName(s)),
+			A2(elm$core$List$member, s, state.j.v));
 	};
 	var checkboxes = A2(
 		elm$core$List$map,
 		source2checkbox,
 		_List_fromArray(
-			[0, 1, 2, 3]));
+			[0, 2, 1, 3]));
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('source-selector')
+			]),
 		_List_fromArray(
 			[
 				A2(elm$html$Html$fieldset, _List_Nil, checkboxes)
 			]));
 };
-var elm$core$Basics$not = _Basics_not;
+var author$project$Main$ToggleOnlyStarredVisible = {$: 4};
+var author$project$Main$displayStarVisibilitySelector = function (state) {
+	var c = A3(
+		author$project$Main$checkbox,
+		author$project$Main$SetView(author$project$Main$ToggleOnlyStarredVisible),
+		'only starred',
+		state.j.E);
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('star-selector')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$fieldset,
+				_List_Nil,
+				_List_fromArray(
+					[c]))
+			]));
+};
 var author$project$Main$matchesArchiveVisibility = F2(
 	function (album, archiveVisibility) {
 		switch (archiveVisibility) {
 			case 0:
-				return !album.aF;
+				return !album.aH;
 			case 1:
-				return album.aF;
+				return album.aH;
 			default:
 				return true;
 		}
@@ -8476,21 +8593,21 @@ var author$project$Main$matchesSourceVisibility = F2(
 	function (album, source) {
 		switch (source) {
 			case 0:
-				return album.a_;
+				return album.a0;
 			case 1:
-				return author$project$Main$isJust(album.a9);
+				return author$project$Main$isJust(album.bb);
 			case 2:
-				return author$project$Main$isJust(album.a4);
+				return author$project$Main$isJust(album.a6);
 			default:
-				return (!album.a_) && ((!author$project$Main$isJust(album.a9)) && (!author$project$Main$isJust(album.a4)));
+				return (!album.a0) && ((!author$project$Main$isJust(album.bb)) && (!author$project$Main$isJust(album.a6)));
 		}
 	});
-var author$project$Main$makeAlbumFilter = F2(
-	function (viewOptions, album) {
-		return A2(author$project$Main$matchesArchiveVisibility, album, viewOptions.J) && A2(
+var author$project$Main$makeAlbumFilter = F3(
+	function (viewOptions, starredAlbums, album) {
+		return A2(author$project$Main$matchesArchiveVisibility, album, viewOptions.L) && (A2(
 			elm$core$List$any,
 			author$project$Main$matchesSourceVisibility(album),
-			viewOptions.u);
+			viewOptions.v) && ((!viewOptions.E) || A2(elm$core$Set$member, album.aP, starredAlbums)));
 	});
 var elm$core$List$all = F2(
 	function (isOkay, list) {
@@ -8503,7 +8620,7 @@ var elm$core$String$words = _String_words;
 var author$project$Catalogue$artistMatchesFilter = F2(
 	function (filter, artist) {
 		var nameWords = elm$core$String$words(
-			author$project$Catalogue$simplifyString(artist.r));
+			author$project$Catalogue$simplifyString(artist.s));
 		return A2(
 			elm$core$List$all,
 			function (w) {
@@ -8522,11 +8639,11 @@ var elm$core$String$isEmpty = function (string) {
 	return string === '';
 };
 var author$project$Main$makeArtistFilter = function (viewOptions) {
-	if (elm$core$String$isEmpty(viewOptions.B)) {
+	if (elm$core$String$isEmpty(viewOptions.C)) {
 		return elm$core$Basics$always(true);
 	} else {
 		var normalized = elm$core$String$toLower(
-			kuon$elm_string_normalize$String$Normalize$removeDiacritics(viewOptions.B));
+			kuon$elm_string_normalize$String$Normalize$removeDiacritics(viewOptions.C));
 		return A2(
 			elm$core$Basics$composeL,
 			author$project$Catalogue$artistMatchesFilter(normalized),
@@ -8548,7 +8665,7 @@ var author$project$Main$getVisibleAlbumsByArtist = function (state) {
 	var aux = function (albums) {
 		return A2(
 			elm$core$List$filter,
-			author$project$Main$makeAlbumFilter(state.l),
+			A2(author$project$Main$makeAlbumFilter, state.j, state.o),
 			albums);
 	};
 	return A2(
@@ -8589,15 +8706,16 @@ var author$project$Main$getVisibleAlbumsByArtist = function (state) {
 			},
 			A2(
 				elm$core$List$filter,
-				author$project$Main$makeArtistFilter(state.l),
+				author$project$Main$makeArtistFilter(state.j),
 				A2(
 					elm$core$Maybe$withDefault,
 					_List_Nil,
-					A2(elm$core$Dict$get, state.l.aT, state.T)))));
+					A2(elm$core$Dict$get, state.j.aV, state.V)))));
 };
 var elm$html$Html$footer = _VirtualDom_node('footer');
 var elm$html$Html$header = _VirtualDom_node('header');
 var elm$html$Html$main_ = _VirtualDom_node('main');
+var elm$html$Html$nav = _VirtualDom_node('nav');
 var author$project$Main$viewBody = function (model) {
 	switch (model.$) {
 		case 1:
@@ -8617,17 +8735,28 @@ var author$project$Main$viewBody = function (model) {
 			return _List_fromArray(
 				[
 					A2(
-					elm$html$Html$header,
+					elm$html$Html$div,
 					_List_fromArray(
 						[
 							elm$html$Html$Attributes$id('top')
 						]),
+					_List_Nil),
+					A2(
+					elm$html$Html$header,
+					_List_Nil,
 					_List_fromArray(
 						[
-							author$project$Main$displayGenres(state),
-							author$project$Main$displaySearchBar(state),
-							author$project$Main$displayArchiveVisibilitySelector(state),
-							author$project$Main$displaySourceVisibilitySelector(state),
+							A2(
+							elm$html$Html$nav,
+							_List_Nil,
+							_List_fromArray(
+								[
+									author$project$Main$displaySearchBar(state),
+									author$project$Main$displayGenres(state),
+									author$project$Main$displaySourceVisibilitySelector(state),
+									author$project$Main$displayArchiveVisibilitySelector(state),
+									author$project$Main$displayStarVisibilitySelector(state)
+								])),
 							author$project$Main$displayArtistList(visibleAlbumsByArtist)
 						])),
 					A2(
@@ -8635,7 +8764,7 @@ var author$project$Main$viewBody = function (model) {
 					_List_Nil,
 					A2(
 						elm$core$List$map,
-						author$project$Main$displayArtist(state.Q),
+						author$project$Main$displayArtist(state),
 						visibleAlbumsByArtist)),
 					A2(
 					elm$html$Html$footer,
@@ -8649,8 +8778,8 @@ var author$project$Main$viewBody = function (model) {
 };
 var author$project$Main$view = function (model) {
 	return {
-		aJ: author$project$Main$viewBody(model),
-		bd: 'Album catalogue'
+		aL: author$project$Main$viewBody(model),
+		bf: 'Album catalogue'
 	};
 };
 var elm$browser$Browser$External = function (a) {
@@ -8726,7 +8855,7 @@ var elm$core$String$contains = _String_contains;
 var elm$core$String$toInt = _String_toInt;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {ah: fragment, ai: host, an: path, ap: port_, as: protocol, at: query};
+		return {aj: fragment, ak: host, ap: path, ar: port_, au: protocol, av: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -8832,6 +8961,6 @@ var elm$url$Url$fromString = function (str) {
 };
 var elm$browser$Browser$document = _Browser_document;
 var author$project$Main$main = elm$browser$Browser$document(
-	{aZ: author$project$Main$init, bc: author$project$Main$subscriptions, be: author$project$Main$update, bg: author$project$Main$view});
+	{a$: author$project$Main$init, be: author$project$Main$subscriptions, bg: author$project$Main$update, bi: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(
 	elm$json$Json$Decode$succeed(0))(0)}});}(this));

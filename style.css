@@ -24,12 +24,12 @@ body {
   margin: 0; }
 
 header {
-  margin: 10px 35px 0 35px; }
+  padding: 50px 35px 0 35px; }
 
 main {
   display: flex;
   flex-flow: row wrap;
-  margin: 40px 0 0 0;
+  margin: 45px 0 0 0;
   padding: 40px 10px 20px 0;
   border-top: 1px solid #5c6370;
   border-bottom: 1px solid #5c6370; }
@@ -49,14 +49,89 @@ a {
   text-decoration: none;
   color: inherit; }
 
-.artist-list {
-  margin: 20px 0 0 0;
+nav {
   display: flex;
-  flex-flow: row wrap; }
+  flex-flow: row wrap;
+  justify-content: space-between; }
+
+nav > * {
+  display: inline-block; }
+
+.artist-list {
+  margin: 35px 0 0 0;
+  display: flex;
+  flex-flow: row wrap;
+  line-height: 1.4;
+  color: rgba(171, 178, 191, 0.75); }
   .artist-list .artist-list-letter, .artist-list .artist-list-name {
     margin: 0 15px 0 0; }
   .artist-list .artist-list-letter {
     color: #c18401; }
+
+fieldset {
+  border: none;
+  margin: 0;
+  padding: 0; }
+
+input[type="checkbox"], input[type="radio"] {
+  display: none; }
+
+fieldset label span {
+  border-top: 1px solid #5c6370;
+  border-bottom: 1px solid #5c6370;
+  border-left: 1px solid #5c6370;
+  padding: 3px 7px 4px 7px;
+  color: #5c6370;
+  user-select: none;
+  -webkit-user-select: none; }
+
+fieldset label:first-child span {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px; }
+
+fieldset label:last-child span {
+  border-right: 1px solid #5c6370;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px; }
+
+:checked + span {
+  color: #c18401;
+  color: rgba(193, 132, 1, 0.75); }
+
+#source-selector fieldset label:nth-child(1) :checked + span {
+  color: rgba(224, 108, 117, 0.75); }
+
+#source-selector fieldset label:nth-child(2) :checked + span {
+  color: rgba(97, 175, 239, 0.75); }
+
+#source-selector fieldset label:nth-child(3) :checked + span {
+  color: rgba(152, 195, 121, 0.75); }
+
+#source-selector fieldset label:nth-child(4) :checked + span {
+  color: rgba(171, 178, 191, 0.75); }
+
+input[type="search"] {
+  background-color: #282c34;
+  border: 1px solid #5c6370;
+  border-radius: 5px;
+  height: 25px;
+  margin: 0;
+  padding: 1px 6px;
+  color: #c18401;
+  font-size: 1rem;
+  box-sizing: content-box;
+  position: relative;
+  bottom: 4px; }
+
+::-webkit-input-placeholder {
+  color: #5c6370; }
+
+input[type="search"],
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none; }
 
 .artist {
   margin: 0 0 20px 40px; }
