@@ -309,7 +309,8 @@ viewBody model =
                 visibleAlbumsByArtist =
                     getVisibleAlbumsByArtist state
             in
-            [ Html.header [ id "top" ]
+            [ Html.div [ id "top" ] []
+            , Html.header []
                 [ Html.nav []
                     [ displaySearchBar state
                     , displayGenres state
