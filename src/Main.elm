@@ -57,6 +57,7 @@ type alias ViewOptions =
     , filter : String
     , archiveVisibility : ArchiveVisibility
     , visibleSources : List Source
+    , onlyStarredVisible : Bool
     }
 
 
@@ -98,6 +99,7 @@ type SetViewMsg
     | ChangeFilter String
     | ChangeArchiveVisibility ArchiveVisibility
     | ToggleSourceVisibility Source
+    | ToggleOnlyStarredVisible
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -175,6 +177,11 @@ setView viewMsg viewOptions =
             in
             { viewOptions | visibleSources = newVisibleSources }
 
+        ToggleOnlyStarredVisible ->
+            { viewOptions
+                | onlyStarredVisible = not viewOptions.onlyStarredVisible
+            }
+
 
 makeState : Catalogue -> State
 makeState catalogue =
@@ -238,6 +245,7 @@ makeState catalogue =
         , filter = ""
         , archiveVisibility = OnlyUnarchived
         , visibleSources = [ Local, Spotify, Qobuz, Missing ]
+        , onlyStarredVisible = False
         }
     , starredAlbums = Set.fromList []
     }
@@ -306,6 +314,7 @@ viewBody model =
                 , displaySearchBar state
                 , displayArchiveVisibilitySelector state
                 , displaySourceVisibilitySelector state
+                , displayStarVisibilitySelector state
                 , displayArtistList visibleAlbumsByArtist
                 ]
             , Html.main_ []
@@ -369,8 +378,8 @@ getVisibleAlbumsByArtist : State -> List ( Artist, AlbumsForGenreAndArtist )
 getVisibleAlbumsByArtist state =
     let
         aux albums =
-            albums
-                |> List.filter (makeAlbumFilter state.viewOptions)
+            List.filter (makeAlbumFilter state.viewOptions state.starredAlbums)
+                albums
     in
     state.albumsByGenreAndArtist
         |> Dict.get state.viewOptions.genre
@@ -405,10 +414,13 @@ makeArtistFilter viewOptions =
         Catalogue.artistMatchesFilter normalized << Tuple.first
 
 
-makeAlbumFilter : ViewOptions -> (Album -> Bool)
-makeAlbumFilter viewOptions album =
+makeAlbumFilter : ViewOptions -> StarredAlbums -> (Album -> Bool)
+makeAlbumFilter viewOptions starredAlbums album =
     matchesArchiveVisibility album viewOptions.archiveVisibility
         && List.any (matchesSourceVisibility album) viewOptions.visibleSources
+        && (not viewOptions.onlyStarredVisible
+                || Set.member album.cover starredAlbums
+           )
 
 
 matchesArchiveVisibility : Album -> ArchiveVisibility -> Bool
@@ -504,6 +516,17 @@ displaySourceVisibilitySelector state =
             List.map source2checkbox [ Local, Spotify, Qobuz, Missing ]
     in
     div [] [ Html.fieldset [] checkboxes ]
+
+
+displayStarVisibilitySelector : State -> Html Msg
+displayStarVisibilitySelector state =
+    let
+        c =
+            checkbox (SetView ToggleOnlyStarredVisible)
+                "Show only starred albums"
+                state.viewOptions.onlyStarredVisible
+    in
+    div [] [ Html.fieldset [] [ c ] ]
 
 
 archiveVisibilityName : ArchiveVisibility -> String
