@@ -310,11 +310,13 @@ viewBody model =
                     getVisibleAlbumsByArtist state
             in
             [ Html.header [ id "top" ]
-                [ displayGenres state
-                , displaySearchBar state
-                , displayArchiveVisibilitySelector state
-                , displaySourceVisibilitySelector state
-                , displayStarVisibilitySelector state
+                [ Html.nav []
+                    [ displaySearchBar state
+                    , displayGenres state
+                    , displaySourceVisibilitySelector state
+                    , displayArchiveVisibilitySelector state
+                    , displayStarVisibilitySelector state
+                    ]
                 , displayArtistList visibleAlbumsByArtist
                 ]
             , Html.main_ []
@@ -467,18 +469,24 @@ isJust x =
 displayGenres : State -> Html Msg
 displayGenres state =
     let
-        displayGenre : Genre -> Html Msg
-        displayGenre g =
-            a [ onClick (SetView (SetGenre g.id)) ] [ text (g.name ++ " ") ]
+        genres =
+            List.sortBy .sortKey state.catalogue.genres
+
+        mkRadio : Genre -> Html Msg
+        mkRadio g =
+            radio
+                (SetView <| SetGenre g.id)
+                (String.toLower g.name)
+                (state.viewOptions.genre == g.id)
     in
-    div [] (List.map displayGenre (List.sortBy .sortKey state.catalogue.genres))
+    div [ id "genres" ] [ Html.fieldset [] (List.map mkRadio genres) ]
 
 
 displaySearchBar : State -> Html Msg
 displaySearchBar state =
-    div []
+    div [ id "searchbar" ]
         [ input
-            [ placeholder "Filter"
+            [ placeholder "type to filter…"
             , value state.viewOptions.filter
             , onInput (SetView << ChangeFilter)
             , Html.Attributes.autofocus True
@@ -494,10 +502,10 @@ displayArchiveVisibilitySelector state =
         mkRadio visibility =
             radio
                 (SetView <| ChangeArchiveVisibility visibility)
-                (archiveVisibilityName visibility)
+                (String.toLower (archiveVisibilityName visibility))
                 (state.viewOptions.archiveVisibility == visibility)
     in
-    div []
+    div [ id "archive-selector" ]
         [ Html.fieldset []
             (List.map mkRadio [ OnlyUnarchived, OnlyArchived, Both ])
         ]
@@ -509,13 +517,13 @@ displaySourceVisibilitySelector state =
         source2checkbox s =
             checkbox
                 (SetView <| ToggleSourceVisibility s)
-                (sourceName s)
+                (String.toLower (sourceName s))
                 (List.member s state.viewOptions.visibleSources)
 
         checkboxes =
-            List.map source2checkbox [ Local, Spotify, Qobuz, Missing ]
+            List.map source2checkbox [ Local, Qobuz, Spotify, Missing ]
     in
-    div [] [ Html.fieldset [] checkboxes ]
+    div [ id "source-selector" ] [ Html.fieldset [] checkboxes ]
 
 
 displayStarVisibilitySelector : State -> Html Msg
@@ -523,20 +531,20 @@ displayStarVisibilitySelector state =
     let
         c =
             checkbox (SetView ToggleOnlyStarredVisible)
-                "Show only starred albums"
+                "only starred"
                 state.viewOptions.onlyStarredVisible
     in
-    div [] [ Html.fieldset [] [ c ] ]
+    div [ id "star-selector" ] [ Html.fieldset [] [ c ] ]
 
 
 archiveVisibilityName : ArchiveVisibility -> String
 archiveVisibilityName visibility =
     case visibility of
         OnlyUnarchived ->
-            "Only unarchived"
+            "Unarchived"
 
         OnlyArchived ->
-            "Only archived"
+            "Archived"
 
         Both ->
             "Both"
@@ -567,7 +575,7 @@ box type_ msg name isChecked =
             , onClick msg
             ]
             []
-        , text name
+        , Html.span [] [ text name ]
         ]
 
 

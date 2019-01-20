@@ -1,4 +1,5 @@
-// Colors (from the Atom One themes)
+// COLORS (from the Atom One themes)
+
 
 $syntax-hue:          220;
 
@@ -26,9 +27,10 @@ $icon-spotify-color:  $green;
 $icon-booklet-color:  $purple;
 $icon-archived-color: $main-text-color;
 
-//
-// Fonts
-//
+
+
+// FONTS
+
 
 @font-face {
   font-family: SourceSansPro;
@@ -54,9 +56,10 @@ $icon-archived-color: $main-text-color;
   src: url(resources/SourceSansPro-Semibold.otf.woff);
 }
 
-//
-// Styles
-//
+
+
+// MAIN STYLING
+
 
 *:focus {
   outline: none;
@@ -70,13 +73,13 @@ body {
 }
 
 header {
-  margin: 10px 35px 0 35px;
+  margin: 50px 35px 0 35px;
 }
 
 main {
   display: flex;
   flex-flow: row wrap;
-  margin: 40px 0 0 0;
+  margin: 45px 0 0 0;
   padding: 40px 10px 20px 0;
   border-top: 1px solid $main-border-color;
   border-bottom: 1px solid $main-border-color;
@@ -100,10 +103,27 @@ a {
   color: inherit;
 }
 
-.artist-list {
-  margin: 20px 0 0 0;
+
+
+// HEADER CONTENTS
+
+
+nav {
   display: flex;
   flex-flow: row wrap;
+  justify-content: space-between;
+}
+
+nav > * {
+  display: inline-block;
+}
+
+.artist-list {
+  margin: 35px 0 0 0;
+  display: flex;
+  flex-flow: row wrap;
+  line-height: 1.4;
+  color: fade-out($grey-lightest, 0.25);
 
   .artist-list-letter, .artist-list-name {
     margin: 0 15px 0 0;
@@ -113,6 +133,92 @@ a {
     color: $orange;
   }
 }
+
+fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+input[type="checkbox"], input[type="radio"] {
+  display: none;
+}
+
+$input-label-border: 1px solid $grey-light;
+$input-label-border-radius: 5px;
+
+fieldset label span {
+  border-top: $input-label-border;
+  border-bottom: $input-label-border;
+  border-left: $input-label-border;
+  padding: 3px 7px 4px 7px;
+  color: $grey-light;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+fieldset label:first-child span {
+  border-top-left-radius: $input-label-border-radius;
+  border-bottom-left-radius: $input-label-border-radius;
+}
+
+fieldset label:last-child span {
+  border-right: $input-label-border;
+  border-top-right-radius: $input-label-border-radius;
+  border-bottom-right-radius: $input-label-border-radius;
+}
+
+:checked + span {
+  color: $orange;
+  color: fade-out($orange, 0.25);
+}
+
+#source-selector fieldset label:nth-child(1) :checked + span {
+  color: fade-out($red, 0.25);
+}
+
+#source-selector fieldset label:nth-child(2) :checked + span {
+  color: fade-out($blue, 0.25);
+}
+
+#source-selector fieldset label:nth-child(3) :checked + span {
+  color: fade-out($green, 0.25);
+}
+
+#source-selector fieldset label:nth-child(4) :checked + span {
+  color: fade-out($grey-lightest, 0.25);
+}
+
+input[type="search"] {
+  background-color: $grey-darkest;
+  border: $input-label-border;
+  border-radius: $input-label-border-radius;
+  height: 25px;
+  margin: 0;
+  padding: 1px 6px;
+  color: $orange;
+  font-size: 1rem;
+  box-sizing: content-box;
+  position: relative;
+  bottom: 4px;
+}
+
+::-webkit-input-placeholder {
+  color: $grey-light;
+}
+
+input[type="search"],
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance:none;
+}
+
+
+
+// ARTISTS AND ALBUMS
+
 
 .artist {
   margin: 0 0 20px 40px;
