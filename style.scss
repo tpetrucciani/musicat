@@ -262,6 +262,10 @@ input[type="search"]::-webkit-search-results-decoration {
   margin: 30px 24px 0 0;
   min-width: 222px;
   text-align: right;
+
+  a {
+    padding: 50px 0 0 0;
+  }
 }
 
 .album {
