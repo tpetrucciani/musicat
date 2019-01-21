@@ -669,6 +669,7 @@ displayAlbum starredAlbums album =
                 [ src ("data/covers/" ++ album.cover)
                 , Html.Attributes.width 220
                 , Html.Attributes.height 220
+                , class "cover"
                 ]
                 []
             ]
@@ -682,7 +683,7 @@ putIcons album =
     let
         localIcon =
             if album.local then
-                [ div [ class "icon", class "icon-local" ]
+                [ div [ class "icon", class "local" ]
                     [ a [ title "The album is available locally" ]
                         [ text "Local" ]
                     ]
@@ -694,7 +695,7 @@ putIcons album =
         qobuzIcon =
             case album.qobuz of
                 Just id ->
-                    [ div [ class "icon", class "icon-qobuz" ]
+                    [ div [ class "icon", class "qobuz" ]
                         [ a
                             [ title "Show in Qobuz"
                             , href ("qobuzapp://album/" ++ id)
@@ -709,7 +710,7 @@ putIcons album =
         spotifyIcon =
             case album.spotify of
                 Just id ->
-                    [ div [ class "icon", class "icon-spotify" ]
+                    [ div [ class "icon", class "spotify" ]
                         [ a
                             [ title "Show in Spotify"
                             , href ("spotify:album:" ++ id)
@@ -724,7 +725,7 @@ putIcons album =
         bookletIcon =
             case album.booklet of
                 Just path ->
-                    [ div [ class "icon", class "icon-booklet" ]
+                    [ div [ class "icon", class "booklet" ]
                         [ a
                             [ title "Show album booklet"
                             , href ("data/booklets/" ++ path)
@@ -739,7 +740,7 @@ putIcons album =
 
         archivedIcon =
             if album.archived then
-                [ div [ class "icon", class "icon-archived" ]
+                [ div [ class "icon", class "archived" ]
                     [ a [ title "The album is archived" ]
                         [ text "Archived" ]
                     ]

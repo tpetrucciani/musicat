@@ -21,11 +21,12 @@ $image-border-color: $grey-dark;
 $artist-name-color: $orange;
 $icon-bar-background-color: fade-out($background-color, 0.15);
 
-$icon-local-color:    $red;
-$icon-qobuz-color:    $blue;
-$icon-spotify-color:  $green;
-$icon-booklet-color:  $purple;
-$icon-archived-color: $main-text-color;
+$local-color:    $red;
+$qobuz-color:    $blue;
+$spotify-color:  $green;
+$booklet-color:  $purple;
+$archived-color: $main-text-color;
+$missing-color:  $main-text-color;
 
 
 
@@ -95,8 +96,6 @@ footer {
 
 img {
   display: block;
-  margin: 0;
-  border: 1px solid $image-border-color;
 }
 
 a {
@@ -175,19 +174,19 @@ fieldset label:last-child span {
 }
 
 #source-selector fieldset label:nth-child(1) :checked + span {
-  color: fade-out($red, 0.25);
+  color: fade-out($local-color, 0.25);
 }
 
 #source-selector fieldset label:nth-child(2) :checked + span {
-  color: fade-out($blue, 0.25);
+  color: fade-out($qobuz-color, 0.25);
 }
 
 #source-selector fieldset label:nth-child(3) :checked + span {
-  color: fade-out($green, 0.25);
+  color: fade-out($spotify-color, 0.25);
 }
 
 #source-selector fieldset label:nth-child(4) :checked + span {
-  color: fade-out($grey-lightest, 0.25);
+  color: fade-out($missing-color, 0.25);
 }
 
 input[type="search"] {
@@ -224,7 +223,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 
 
-// ARTISTS AND ALBUMS
+// ARTISTS AND GROUPINGS
 
 
 .artist {
@@ -254,10 +253,6 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .grouping {
   display: inline-block;
-
-  .album {
-    display: inline-block;
-  }
 }
 
 .grouping-name {
@@ -275,14 +270,64 @@ input[type="search"]::-webkit-search-results-decoration {
   }
 }
 
+
+
+// ALBUMS
+
+
 .album {
   display: inline-block;
   margin: 0 24px 22px 0;
   position: relative;
 }
 
-.album:hover .icon-bar {
-  display: block;
+.cover {
+  border: 1px solid $image-border-color;
+}
+
+.icon-bar {
+  display: none;
+  background-color: $icon-bar-background-color;
+  position: absolute;
+  bottom: 0px;
+  height: 22px;
+  padding: 5px 0 2px;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+
+  .album:hover & {
+    display: block;
+  }
+}
+
+.icon {
+  display: inline-block;
+  float: left;
+  margin: 0 0 5px 5px;
+  text-transform: lowercase;
+
+  &.archived {
+    float: right;
+    margin-right: 5px;
+  }
+
+  a {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  &.local, &.archived {
+    a {
+      pointer-events: none;
+    }
+  }
+
+  &.local    { color: $local-color; }
+  &.qobuz    { color: $qobuz-color; }
+  &.spotify  { color: $spotify-color; }
+  &.booklet  { color: $booklet-color; }
+  &.archived { color: $archived-color; }
 }
 
 .star {
@@ -296,68 +341,13 @@ input[type="search"]::-webkit-search-results-decoration {
   padding: 3px 2px 2px 2px;
   border-bottom-left-radius: 8px;
 
-  img {
-    border: none;
+  .album:hover & {
+    display: block;
+    background-color: $icon-bar-background-color;
   }
-}
 
-.album:hover .star {
-  display: block;
-  background-color: $icon-bar-background-color;
-}
-
-.star.starred {
-  display: block;
-  background-color: fade-out($icon-bar-background-color, 0.1);
-}
-
-.icon-bar {
-  display: none;
-  background-color: $icon-bar-background-color;
-  position: absolute;
-  bottom: 0px;
-  height: 22px;
-  padding: 5px 0 2px;
-  width: 100%;
-  color: $main-text-color;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.icon {
-  display: inline-block;
-  text-transform: lowercase;
-  float: left;
-  margin: 0 0 5px 5px;
-}
-
-.icon > a {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.icon-local > a, .icon-archived > a {
-  pointer-events: none;
-}
-
-.icon-local {
-  color: $icon-local-color;
-}
-
-.icon-spotify {
-  color: $icon-spotify-color;
-}
-
-.icon-qobuz {
-  color: $icon-qobuz-color;
-}
-
-.icon-booklet {
-  color: $icon-booklet-color;
-}
-
-.icon-archived {
-  color: $icon-archived-color;
-  float: right;
-  margin-right: 5px;
+  &.starred {
+    display: block;
+    background-color: fade-out($icon-bar-background-color, 0.1);
+  }
 }
