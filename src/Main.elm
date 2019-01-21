@@ -386,6 +386,18 @@ getVisibleAlbumsByArtist state =
         aux albums =
             List.filter (makeAlbumFilter state.viewOptions state.starredAlbums)
                 albums
+
+        filterGrouping ( grouping, albums ) =
+            let
+                filtered =
+                    aux albums
+            in
+            case filtered of
+                [] ->
+                    Nothing
+
+                _ ->
+                    Just ( grouping, filtered )
     in
     state.albumsByGenreAndArtist
         |> Dict.get state.viewOptions.genre
@@ -395,7 +407,7 @@ getVisibleAlbumsByArtist state =
             (\( artist, ( albumsNoGrp, albumsByGrp ) ) ->
                 ( artist
                 , ( aux albumsNoGrp
-                  , List.map (\( g, a ) -> ( g, aux a )) albumsByGrp
+                  , List.filterMap filterGrouping albumsByGrp
                   )
                 )
             )
