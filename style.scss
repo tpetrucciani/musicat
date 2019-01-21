@@ -1,7 +1,7 @@
 // COLORS (from the Atom One themes)
 
 
-$syntax-hue:          220;
+$syntax-hue: 220;
 
 $grey-darkest:  hsl($syntax-hue, 13%, 18%);
 $grey-dark:     hsl($syntax-hue,  8%, 24%);
@@ -69,6 +69,7 @@ body {
   color: $main-text-color;
   background-color: $background-color;
   font-family: SourceSansPro, sans-serif;
+  font-size: 16px;
   margin: 0;
 }
 
@@ -153,6 +154,7 @@ fieldset label span {
   border-left: $input-label-border;
   padding: 3px 7px 4px 7px;
   color: $grey-light;
+  font-size: 1rem;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -169,7 +171,6 @@ fieldset label:last-child span {
 }
 
 :checked + span {
-  color: $orange;
   color: fade-out($orange, 0.25);
 }
 
@@ -195,8 +196,8 @@ input[type="search"] {
   border-radius: $input-label-border-radius;
   height: 25px;
   margin: 0;
-  padding: 1px 6px;
-  color: $orange;
+  padding: 0px 6px 1px 6px;
+  color: fade-out($orange, 0.25);
   font-size: 1rem;
   box-sizing: content-box;
   position: relative;
@@ -207,12 +208,18 @@ input[type="search"] {
   color: $grey-light;
 }
 
+input[type="search"]::-webkit-search-cancel-button {
+  height: 12px;
+  width: 12px;
+  background-image: url("resources/times-circle-solid.svg");
+}
+
 input[type="search"],
 input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration {
-  -webkit-appearance:none;
+  -webkit-appearance: none;
 }
 
 
