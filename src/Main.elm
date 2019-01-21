@@ -325,8 +325,11 @@ viewBody model =
             , Html.footer []
                 [ text
                     ("Colours based on the Atom One themes. "
-                        ++ "Font: Source Sans Pro."
+                        ++ "Fonts: Source Sans Pro, "
                     )
+                , a [ href "https://fontawesome.com/license/free" ]
+                    [ text "Font Awesome" ]
+                , text "."
                 ]
             ]
 
