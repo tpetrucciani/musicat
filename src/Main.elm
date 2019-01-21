@@ -728,6 +728,7 @@ putIcons album =
                         [ a
                             [ title "Show album booklet"
                             , href ("data/booklets/" ++ path)
+                            , Html.Attributes.target "_blank"
                             ]
                             [ text "Booklet" ]
                         ]
