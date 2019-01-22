@@ -299,18 +299,17 @@ input[type="search"]::-webkit-search-results-decoration {
   font-weight: 600;
 
   .album:hover & {
-    display: block;
+    display: flex;
   }
 }
 
 .icon {
   display: inline-block;
-  float: left;
   margin: 0 0 5px 5px;
   text-transform: lowercase;
 
   &.archived {
-    float: right;
+    margin-left: auto;
     margin-right: 5px;
   }
 
