@@ -7,6 +7,16 @@
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-  <script>var app = Elm.Main.init();</script>
+  <script>
+    const key = "musicat-starred-albums";
+    var storedState = localStorage.getItem(key);
+    var starredAlbums = storedState ? JSON.parse(storedState) : null;
+    var app = Elm.Main.init({
+      flags: starredAlbums
+    });
+    app.ports.cache.subscribe(function(data) {
+      localStorage.setItem(key, JSON.stringify(data));
+    });
+  </script>
 </body>
 </html>

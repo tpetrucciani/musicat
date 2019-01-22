@@ -1,4 +1,4 @@
-module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
+port module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
 
 import Browser
 import Catalogue exposing (..)
@@ -7,6 +7,8 @@ import Html exposing (Html, a, div, img, input, text)
 import Html.Attributes exposing (class, href, id, placeholder, src, title, value)
 import Html.Events exposing (onClick, onInput)
 import Http
+import Json.Decode
+import Json.Encode as E
 import NaturalOrdering
 import Set exposing (Set)
 import String.Normalize
@@ -25,12 +27,15 @@ main =
         }
 
 
+port cache : E.Value -> Cmd msg
+
+
 
 -- MODEL
 
 
 type Model
-    = Loading
+    = Loading E.Value
     | Failure String
     | Success State
 
@@ -74,9 +79,9 @@ type Source
     | Missing
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Loading
+init : E.Value -> ( Model, Cmd Msg )
+init flags =
+    ( Loading flags
     , Http.get
         { url = "data/catalogue.json"
         , expect = Http.expectJson GotCatalogue catalogueDecoder
@@ -105,12 +110,12 @@ type SetViewMsg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case model of
-        Loading ->
+        Loading flags ->
             case msg of
                 GotCatalogue result ->
                     case result of
                         Ok catalogue ->
-                            ( Success (makeState catalogue), Cmd.none )
+                            ( makeModel catalogue flags, Cmd.none )
 
                         Err (Http.BadBody err) ->
                             ( Failure err, Cmd.none )
@@ -147,8 +152,11 @@ update msg model =
 
                         newState =
                             { state | starredAlbums = newStarredAlbums }
+
+                        encodedNewStarredAlbums =
+                            E.list E.string (Set.toList newStarredAlbums)
                     in
-                    ( Success newState, Cmd.none )
+                    ( Success newState, cache encodedNewStarredAlbums )
 
                 _ ->
                     ( model, Cmd.none )
@@ -183,8 +191,18 @@ setView viewMsg viewOptions =
             }
 
 
-makeState : Catalogue -> State
-makeState catalogue =
+makeModel : Catalogue -> E.Value -> Model
+makeModel catalogue flags =
+    case Json.Decode.decodeValue (Json.Decode.list Json.Decode.string) flags of
+        Ok starredAlbums ->
+            Success (makeState catalogue starredAlbums)
+
+        Err e ->
+            Success (makeState catalogue [])
+
+
+makeState : Catalogue -> List String -> State
+makeState catalogue starredAlbums =
     let
         artists =
             List.sortBy .sortKey catalogue.artists
@@ -247,7 +265,7 @@ makeState catalogue =
         , visibleSources = [ Local, Spotify, Qobuz, Missing ]
         , onlyStarredVisible = False
         }
-    , starredAlbums = Set.fromList []
+    , starredAlbums = Set.fromList starredAlbums
     }
 
 
@@ -301,7 +319,7 @@ viewBody model =
         Failure err ->
             [ text err ]
 
-        Loading ->
+        Loading _ ->
             [ text "Loading..." ]
 
         Success state ->
