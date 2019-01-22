@@ -4,10 +4,12 @@
   },
   "genres": {
     "classical": { "name": "Classical", "sortKey": "classical" },
-    "jazz": { "name": "Jazz", "sortKey": "jazz" }
+    "jazz": { "name": "Jazz", "sortKey": "jazz" },
+    "Rock": { "name": "Rock", "sortKey": "rock" }
   },
-  "artists": {
+ "artists": {
     "schubert": { "name": "Franz Schubert", "sortKey": "Schubert Franz" },
+    "Šostakovič": { "name": "Dmitrij Šostakovič ", "sortKey": "Šostakovič" },
     "lars-danielsson": { "name": "Lars Danielsson", "sortKey": "Danielsson Lars" },
     "leszek-mozdzer": { "name": "Leszek Możdżer", "sortKey": "Możdżer Leszek" },
     "Michel Petrucciani": { "name": "Michel Petrucciani", "sortKey": "Petrucciani Michel" },
@@ -21,7 +23,22 @@
     "Brad Mehldau": { "name": "Brad Mehldau", "sortKey": "Mehldau Brad" },
     "Bill Evans": { "name": "Bill Evans", "sortKey": "Evans Bill" },
     "Kenny Wheeler": { "name": "Kenny Wheeler", "sortKey": "Wheeler Kenny" },
-    "Paolo Fresu": { "name": "Paolo Fresu", "sortKey": "Fresu Paolo" }
+    "Paolo Fresu": { "name": "Paolo Fresu", "sortKey": "Fresu Paolo" },
+    "The Velvet Underground": { "name": "The Velvet Underground", "sortKey": "Velvet Underground" },
+    "Leonard Cohen": { "name": " Leonard Cohen", "sortKey": "Cohen" },
+    "Brian Eno": { "name": "Brian Eno", "sortKey": "Eno" },
+    "John Cale": { "name": "John Cale", "sortKey": "Cale" },
+    "Radiohead": { "name": "Radiohead", "sortKey": "Radiohead" },
+    "David Byrne": { "name": "David Byrne", "sortKey": "Byrne" },
+    "Lou Reed": { "name": "Lou Reed", "sortKey": "Reed" },
+    "The Band": { "name": "The Band", "sortKey": "Band" },
+    "Other Lives": { "name": "Other Lives", "sortKey": "Other Lives" },
+    "Sonic Youth": { "name": "Sonic Youth", "sortKey": "Sonic Youth" },
+    "Talking Heads": { "name": "Talking Heads", "sortKey": "Talking Heads" },
+    "The Rolling Stones": { "name": "The Rolling Stones", "sortKey": "Rolling Stones" },
+    "The Beach Boys": { "name": "The Beach Boys", "sortKey": "Beach Boys" },
+    "Blind Guardian": { "name": "Blind Guardian", "sortKey": "Blind Guardian" },
+    "Bob Dylan": { "name": "Bob Dylan", "sortKey": "Dylan" }
   },
   "albums": [
     {
@@ -376,6 +393,256 @@
         { "genre": "classical", "artist": "schubert", "grouping": "Winterreise" }
       ],
       "comment": "Winterreise Padmore"
+    },
+    {
+      "cover": "spotify/02O0Ea7JGwlLq8faAiv1MN.jpeg",
+      "spotify": "02O0Ea7JGwlLq8faAiv1MN",
+      "entries": [
+        { "genre": "Rock", "artist": "The Velvet Underground" }
+      ],
+      "comment": "The Velvet Underground & Nico"
+    },
+    {
+      "cover": "spotify/5iU6kQaQNyWPGBYav8dWhj.jpeg",
+      "spotify": "5iU6kQaQNyWPGBYav8dWhj",
+      "entries": [
+        { "genre": "Rock", "artist": "The Velvet Underground" }
+      ],
+      "comment": "White Light White Heat"
+    },
+    {
+      "cover": "spotify/4kR4Yr84lErTVOaZ0uiULu.jpeg",
+      "spotify": "4kR4Yr84lErTVOaZ0uiULu",
+      "entries": [
+        { "genre": "Rock", "artist": "The Velvet Underground" }
+      ],
+      "comment": "The Velvet Underground"
+    },
+    {
+      "cover": "spotify/1D900xwFxLRSUBvVyMhR8c.jpeg",
+      "spotify": "1D900xwFxLRSUBvVyMhR8c",
+      "entries": [
+        { "genre": "Rock", "artist": "Leonard Cohen" }
+      ],
+      "comment": "Songs of Leonard Cohen"
+    },
+    {
+      "cover": "spotify/5GVOjxY3H3CQ98eWKeKo9k.jpeg",
+      "spotify": "5GVOjxY3H3CQ98eWKeKo9k",
+      "entries": [
+        { "genre": "Rock", "artist": "Leonard Cohen" }
+      ],
+      "comment": "Songs of love and hate"
+    },
+    {
+      "cover": "spotify/74jn28Kr29iyh8eZXSvnwi.jpeg",
+      "spotify": "74jn28Kr29iyh8eZXSvnwi",
+      "entries": [
+        { "genre": "Rock", "artist": "Brian Eno" }
+      ],
+      "comment": "Here come the warm jets"
+    },
+    {
+      "cover": "spotify/1IMbtEVdtaFz0PPiq4brLZ.jpeg",
+      "spotify": "1IMbtEVdtaFz0PPiq4brLZ",
+      "entries": [
+        { "genre": "Rock", "artist": "Brian Eno" }
+      ],
+      "comment": "Taking Tiger Mountain"
+    },
+    {
+      "cover": "spotify/6uoeezh45SYEb8lcT8gDTY.jpeg",
+      "spotify": "6uoeezh45SYEb8lcT8gDTY",
+      "entries": [
+        { "genre": "Rock", "artist": "Brian Eno" }
+      ],
+      "comment": "Another green world"
+    },
+    {
+      "cover": "spotify/6lU1MDxi3TqhKnYNQm555u.jpeg",
+      "spotify": "6lU1MDxi3TqhKnYNQm555u",
+      "entries": [
+        { "genre": "Rock", "artist": "Brian Eno" }
+      ],
+      "comment": "Before and after science"
+    },
+    {
+      "cover": "spotify/47e7SP8MtzYKK8Lm3gEK2i.jpeg",
+      "spotify": "47e7SP8MtzYKK8Lm3gEK2i",
+      "entries": [
+        { "genre": "Rock", "artist": "Brian Eno" }
+      ],
+      "comment": "Small craft on a milk sea"
+    },
+    {
+      "cover": "spotify/1m08xZXMNDVCYU7VgUGsme.jpeg",
+      "spotify": "1m08xZXMNDVCYU7VgUGsme",
+      "entries": [
+        { "genre": "Rock", "artist": "Brian Eno" },
+        { "genre": "Rock", "artist": "David Byrne" }
+      ],
+      "comment": "My life..."
+    },
+    {
+      "cover": "spotify/4Nyu5zVDr4XV6QOBCqdTrk.jpeg",
+      "spotify": "4Nyu5zVDr4XV6QOBCqdTrk",
+      "entries": [
+        { "genre": "Rock", "artist": "Lou Reed" },
+        { "genre": "Rock", "artist": "John Cale" }
+      ],
+      "comment": "Songs for Drella"
+    },
+    {
+      "cover": "spotify/0nPrnmv6maJLLaPpy1cWGB.jpeg",
+      "spotify": "0nPrnmv6maJLLaPpy1cWGB",
+      "entries": [
+        { "genre": "Rock", "artist": "The Band" }
+      ],
+      "comment": "The Band"
+    },
+    {
+      "cover": "spotify/0nuPXgAXAfPmz9AW1PPrlk.jpeg",
+      "spotify": "0nuPXgAXAfPmz9AW1PPrlk",
+      "entries": [
+        { "genre": "Rock", "artist": "The Band" }
+      ],
+      "comment": "Music from Big Pink"
+    },
+    {
+      "cover": "spotify/2YrYkKtbKUJjisd4NfG3GF.jpeg",
+      "spotify": "2YrYkKtbKUJjisd4NfG3GF",
+      "entries": [
+        { "genre": "Rock", "artist": "Other Lives" }
+      ],
+      "comment": "Tamer animals"
+    },
+    {
+      "cover": "spotify/3BYlBcND6PeKoW6ZODjZO3.jpeg",
+      "spotify": "3BYlBcND6PeKoW6ZODjZO3",
+      "entries": [
+        { "genre": "Rock", "artist": "Sonic Youth" }
+      ],
+      "comment": "Daydream nation"
+    },
+    {
+      "cover": "spotify/5655J8rBfKRDdVIYn3WLvH.jpeg",
+      "spotify": "5655J8rBfKRDdVIYn3WLvH",
+      "entries": [
+        { "genre": "Rock", "artist": "Talking Heads" }
+      ],
+      "comment": "Remain in light"
+    },
+    {
+      "cover": "spotify/5kMxEbEtS6a2jyzkqI5JGa.jpeg",
+      "spotify": "5kMxEbEtS6a2jyzkqI5JGa",
+      "entries": [
+        { "genre": "Rock", "artist": "Talking Heads" }
+      ],
+      "comment": "More songs about buildings and food"
+    },
+    {
+      "cover": "spotify/1CkMvvVcMdvMAYIz4Zhzax.jpeg",
+      "spotify": "1CkMvvVcMdvMAYIz4Zhzax",
+      "entries": [
+        { "genre": "Rock", "artist": "Lou Reed" }
+      ],
+      "comment": "The blue mask"
+    },
+    {
+      "cover": "spotify/7xGqf9DddW89cg7m6zX88t.jpeg",
+      "spotify": "7xGqf9DddW89cg7m6zX88t",
+      "entries": [
+        { "genre": "Rock", "artist": "Lou Reed" }
+      ],
+      "comment": "New York"
+    },
+    {
+      "cover": "spotify/3UByPFj5ymycKKnxRkGDRu.jpeg",
+      "spotify": "3UByPFj5ymycKKnxRkGDRu",
+      "entries": [
+        { "genre": "Rock", "artist": "The Rolling Stones" }
+      ],
+      "comment": "Big Hits"
+    },
+    {
+      "cover": "spotify/4KdEMeJZeYMVDoEvJSnwuj.jpeg",
+      "spotify": "4KdEMeJZeYMVDoEvJSnwuj",
+      "entries": [
+        { "genre": "Rock", "artist": "John Cale" }
+      ],
+      "comment": "Paris 1919"
+    },
+    {
+      "cover": "spotify/0BBduHWw9CbB5dctxFp48f.jpeg",
+      "spotify": "0BBduHWw9CbB5dctxFp48f",
+      "entries": [
+        { "genre": "Rock", "artist": "The Beach Boys" }
+      ],
+      "comment": "Pet sounds (mono)"
+    },
+    {
+      "cover": "spotify/3xYNQ0WHbe15Jxj8omO8cA.jpeg",
+      "spotify": "3xYNQ0WHbe15Jxj8omO8cA",
+      "entries": [
+        { "genre": "Rock", "artist": "Blind Guardian" }
+      ],
+      "comment": "Nightfall in Middle-earth"
+    },
+    {
+      "cover": "spotify/6YabPKtZAjxwyWbuO9p4ZD.jpeg",
+      "spotify": "6YabPKtZAjxwyWbuO9p4ZD",
+      "entries": [
+        { "genre": "Rock", "artist": "Bob Dylan" }
+      ],
+      "comment": "Highway 61 Revisited"
+    },
+    {
+      "cover": "spotify/4NP1rhnsPdYpnyJP0p0k0L.jpeg",
+      "spotify": "4NP1rhnsPdYpnyJP0p0k0L",
+      "entries": [
+        { "genre": "Rock", "artist": "Bob Dylan" }
+      ],
+      "comment": "Blonde on blonde"
+    },
+    {
+      "cover": "spotify/5WBx64FIN04CvM2T1MGrUN.jpeg",
+      "spotify": "5WBx64FIN04CvM2T1MGrUN",
+      "entries": [
+        { "genre": "Rock", "artist": "Bob Dylan" }
+      ],
+      "comment": "Nashville skyline"
+    },
+    {
+      "cover": "spotify/2P6XBRoQKaUatcyWlWEMwr.jpeg",
+      "spotify": "2P6XBRoQKaUatcyWlWEMwr",
+      "entries": [
+        { "genre": "Rock", "artist": "Bob Dylan" }
+      ],
+      "comment": "Freewheelin' (mono)"
+    },
+    {
+      "cover": "spotify/19RUXBFyM4PpmrLRdtqWbp.jpeg",
+      "spotify": "19RUXBFyM4PpmrLRdtqWbp",
+      "entries": [
+        { "genre": "Rock", "artist": "Radiohead" }
+      ],
+      "comment": "Kid A"
+    },
+    {
+      "cover": "spotify/6PhA4Eaw8ynMjfaXGLsmv4.jpeg",
+      "spotify": "6PhA4Eaw8ynMjfaXGLsmv4",
+      "entries": [
+        { "genre": "classical", "artist": "Šostakovič" }
+      ],
+      "comment": "13 Kitajenko"
+    },
+    {
+      "cover": "spotify/6yZZoHO4F5ldmwN9YeVVMI.jpeg",
+      "spotify": "6yZZoHO4F5ldmwN9YeVVMI",
+      "entries": [
+        { "genre": "classical", "artist": "Šostakovič" }
+      ],
+      "comment": "14+15 Kitajenko"
     }
   ]
 }
