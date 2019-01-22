@@ -21,6 +21,7 @@ body {
   color: #abb2bf;
   background-color: #282c34;
   font-family: SourceSansPro, sans-serif;
+  font-size: 16px;
   margin: 0; }
 
 header {
@@ -41,9 +42,7 @@ footer {
   margin: 30px 0 35px 0; }
 
 img {
-  display: block;
-  margin: 0;
-  border: 1px solid #383c42; }
+  display: block; }
 
 a {
   text-decoration: none;
@@ -82,6 +81,7 @@ fieldset label span {
   border-left: 1px solid #5c6370;
   padding: 3px 7px 4px 7px;
   color: #5c6370;
+  font-size: 1rem;
   user-select: none;
   -webkit-user-select: none; }
 
@@ -95,7 +95,6 @@ fieldset label:last-child span {
   border-bottom-right-radius: 5px; }
 
 :checked + span {
-  color: #c18401;
   color: rgba(193, 132, 1, 0.75); }
 
 #source-selector fieldset label:nth-child(1) :checked + span {
@@ -116,8 +115,8 @@ input[type="search"] {
   border-radius: 5px;
   height: 25px;
   margin: 0;
-  padding: 1px 6px;
-  color: #c18401;
+  padding: 0px 6px 1px 6px;
+  color: rgba(193, 132, 1, 0.75);
   font-size: 1rem;
   box-sizing: content-box;
   position: relative;
@@ -125,6 +124,11 @@ input[type="search"] {
 
 ::-webkit-input-placeholder {
   color: #5c6370; }
+
+input[type="search"]::-webkit-search-cancel-button {
+  height: 12px;
+  width: 12px;
+  background-image: url("resources/times-circle-solid.svg"); }
 
 input[type="search"],
 input[type="search"]::-webkit-search-decoration,
@@ -143,6 +147,8 @@ input[type="search"]::-webkit-search-results-decoration {
   margin: 0 24px 0 0; }
 
 .album-container {
+  display: flex;
+  flex-flow: row wrap;
   margin: 12px 0 0 0; }
 
 .grouping-links {
@@ -155,8 +161,6 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .grouping {
   display: inline-block; }
-  .grouping .album {
-    display: inline-block; }
 
 .grouping-name {
   display: inline-block;
@@ -167,14 +171,53 @@ input[type="search"]::-webkit-search-results-decoration {
   margin: 30px 24px 0 0;
   min-width: 222px;
   text-align: right; }
+  .grouping-name a {
+    padding: 50px 0 0 0; }
 
 .album {
   display: inline-block;
-  margin: 0 24px 22px 0;
+  margin: 0 24px 24px 0;
   position: relative; }
 
-.album:hover .icon-bar {
-  display: block; }
+.cover {
+  border: 1px solid #383c42; }
+
+.icon-bar {
+  display: none;
+  background-color: rgba(40, 44, 52, 0.85);
+  position: absolute;
+  bottom: 0px;
+  height: 22px;
+  padding: 5px 0 2px;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600; }
+  .album:hover .icon-bar {
+    display: block; }
+
+.icon {
+  display: inline-block;
+  float: left;
+  margin: 0 0 5px 5px;
+  text-transform: lowercase; }
+  .icon.archived {
+    float: right;
+    margin-right: 5px; }
+  .icon a {
+    user-select: none;
+    -webkit-user-select: none; }
+  .icon.local a, .icon.archived a {
+    pointer-events: none; }
+  .icon.local {
+    color: #e06c75; }
+  .icon.qobuz {
+    color: #61afef; }
+  .icon.spotify {
+    color: #98c379; }
+  .icon.booklet {
+    color: #c678dd; }
+  .icon.archived {
+    color: #abb2bf; }
 
 .star {
   display: none;
@@ -186,55 +229,9 @@ input[type="search"]::-webkit-search-results-decoration {
   right: 0;
   padding: 3px 2px 2px 2px;
   border-bottom-left-radius: 8px; }
-  .star img {
-    border: none; }
-
-.album:hover .star {
-  display: block;
-  background-color: rgba(40, 44, 52, 0.85); }
-
-.star.starred {
-  display: block;
-  background-color: rgba(40, 44, 52, 0.75); }
-
-.icon-bar {
-  display: none;
-  background-color: rgba(40, 44, 52, 0.85);
-  position: absolute;
-  bottom: 0px;
-  height: 22px;
-  padding: 5px 0 2px;
-  width: 100%;
-  color: #abb2bf;
-  font-size: 13px;
-  font-weight: 600; }
-
-.icon {
-  display: inline-block;
-  text-transform: lowercase;
-  float: left;
-  margin: 0 0 5px 5px; }
-
-.icon > a {
-  user-select: none;
-  -webkit-user-select: none; }
-
-.icon-local > a, .icon-archived > a {
-  pointer-events: none; }
-
-.icon-local {
-  color: #e06c75; }
-
-.icon-spotify {
-  color: #98c379; }
-
-.icon-qobuz {
-  color: #61afef; }
-
-.icon-booklet {
-  color: #c678dd; }
-
-.icon-archived {
-  color: #abb2bf;
-  float: right;
-  margin-right: 5px; }
+  .album:hover .star {
+    display: block;
+    background-color: rgba(40, 44, 52, 0.85); }
+  .star.starred {
+    display: block;
+    background-color: rgba(40, 44, 52, 0.75); }
