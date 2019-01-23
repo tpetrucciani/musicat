@@ -42,15 +42,17 @@ type Model
 
 type alias State =
     { catalogue : Catalogue
-    , albumsByGenreAndArtist :
-        Dict GenreId (List ( Artist, AlbumsForGenreAndArtist ))
+    , albumsByGenreAndArtist : Dict GenreId (List ArtistAlbums)
     , viewOptions : ViewOptions
     , starredAlbums : StarredAlbums
     }
 
 
-type alias AlbumsForGenreAndArtist =
-    ( List Album, List ( Grouping, List Album ) )
+type alias ArtistAlbums =
+    { artist : Artist
+    , albumsNoGrouping : List Album
+    , albumsByGrouping : List ( Grouping, List Album )
+    }
 
 
 type alias StarredAlbums =
@@ -207,7 +209,7 @@ makeState catalogue starredAlbums =
         artists =
             List.sortBy .sortKey catalogue.artists
 
-        albumsByGenreAndArtist : Dict GenreId (List ( Artist, AlbumsForGenreAndArtist ))
+        albumsByGenreAndArtist : Dict GenreId (List ArtistAlbums)
         albumsByGenreAndArtist =
             catalogue.genres
                 |> List.sortBy .sortKey
@@ -215,12 +217,12 @@ makeState catalogue starredAlbums =
                 |> initAssocList albumsByArtistForGenre
                 |> Dict.fromList
 
-        albumsByArtistForGenre : GenreId -> List ( Artist, AlbumsForGenreAndArtist )
+        albumsByArtistForGenre : GenreId -> List ArtistAlbums
         albumsByArtistForGenre genre =
             artists
-                |> initAssocList (albumsForGenreAndArtist genre)
+                |> List.map (albumsForGenreAndArtist genre)
 
-        albumsForGenreAndArtist : GenreId -> Artist -> AlbumsForGenreAndArtist
+        albumsForGenreAndArtist : GenreId -> Artist -> ArtistAlbums
         albumsForGenreAndArtist genre artist =
             let
                 matchesGenreArtist : GenreId -> Artist -> Entry -> Bool
@@ -252,9 +254,11 @@ makeState catalogue starredAlbums =
                 albumsForGrouping grouping =
                     List.filter (matchesGrouping grouping) albums
             in
-            ( albumsForGrouping Nothing
-            , List.map (\g -> ( g, albumsForGrouping (Just g) )) groupings
-            )
+            { artist = artist
+            , albumsNoGrouping = albumsForGrouping Nothing
+            , albumsByGrouping =
+                List.map (\g -> ( g, albumsForGrouping (Just g) )) groupings
+            }
     in
     { catalogue = catalogue
     , albumsByGenreAndArtist = albumsByGenreAndArtist
@@ -352,11 +356,11 @@ viewBody model =
             ]
 
 
-displayArtistList : List ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
+displayArtistList : List ArtistAlbums -> Html Msg
 displayArtistList albumsByArtist =
     let
         artists =
-            List.map Tuple.first albumsByArtist
+            List.map .artist albumsByArtist
 
         firstLetter artist =
             String.left 1 artist.sortKey
@@ -398,7 +402,7 @@ displayArtistList albumsByArtist =
     div [ class "artist-list" ] artistLinks
 
 
-getVisibleAlbumsByArtist : State -> List ( Artist, AlbumsForGenreAndArtist )
+getVisibleAlbumsByArtist : State -> List ArtistAlbums
 getVisibleAlbumsByArtist state =
     let
         aux albums =
@@ -422,21 +426,22 @@ getVisibleAlbumsByArtist state =
         |> Maybe.withDefault []
         |> List.filter (makeArtistFilter state.viewOptions)
         |> List.map
-            (\( artist, ( albumsNoGrp, albumsByGrp ) ) ->
-                ( artist
-                , ( aux albumsNoGrp
-                  , List.filterMap filterGrouping albumsByGrp
-                  )
-                )
+            (\{ artist, albumsNoGrouping, albumsByGrouping } ->
+                { artist = artist
+                , albumsNoGrouping = aux albumsNoGrouping
+                , albumsByGrouping = List.filterMap filterGrouping albumsByGrouping
+                }
             )
         |> List.filter
-            (\( _, ( albumsNoGrp, albumsByGrp ) ) ->
-                not (List.isEmpty albumsNoGrp)
-                    || List.any (not << List.isEmpty << Tuple.second) albumsByGrp
+            (\{ artist, albumsNoGrouping, albumsByGrouping } ->
+                not (List.isEmpty albumsNoGrouping)
+                    || List.any
+                        (not << List.isEmpty << Tuple.second)
+                        albumsByGrouping
             )
 
 
-makeArtistFilter : ViewOptions -> (( Artist, AlbumsForGenreAndArtist ) -> Bool)
+makeArtistFilter : ViewOptions -> (ArtistAlbums -> Bool)
 makeArtistFilter viewOptions =
     if String.isEmpty viewOptions.filter then
         always True
@@ -447,7 +452,7 @@ makeArtistFilter viewOptions =
                 String.toLower
                     (String.Normalize.removeDiacritics viewOptions.filter)
         in
-        Catalogue.artistMatchesFilter normalized << Tuple.first
+        Catalogue.artistMatchesFilter normalized << .artist
 
 
 makeAlbumFilter : ViewOptions -> StarredAlbums -> (Album -> Bool)
@@ -628,20 +633,20 @@ artistName catalogue artist =
     artist.name
 
 
-displayArtist : State -> ( Artist, AlbumsForGenreAndArtist ) -> Html Msg
-displayArtist state ( artist, ( albumsNoGrp, albumsByGrp ) ) =
+displayArtist : State -> ArtistAlbums -> Html Msg
+displayArtist state { artist, albumsNoGrouping, albumsByGrouping } =
     let
         contents =
             [ a [ class "artist-name", id artist.id, href "#top" ]
                 [ text (artistName state.catalogue artist) ]
             , div
                 [ class "grouping-links" ]
-                (List.map (displayGroupingLink << Tuple.first) albumsByGrp)
+                (List.map (displayGroupingLink << Tuple.first) albumsByGrouping)
             , div [ class "album-container" ]
-                (List.map (displayAlbum state.starredAlbums) albumsNoGrp
+                (List.map (displayAlbum state.starredAlbums) albumsNoGrouping
                     ++ List.map
                         (displayGrouping state.starredAlbums artist)
-                        albumsByGrp
+                        albumsByGrouping
                 )
             ]
     in
