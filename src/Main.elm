@@ -402,46 +402,49 @@ displayArtistList albumsByArtist =
     div [ class "artist-list" ] artistLinks
 
 
+applyFilterToArtistAlbums :
+    (Artist -> Bool)
+    -> (Album -> Bool)
+    -> ArtistAlbums
+    -> Maybe ArtistAlbums
+applyFilterToArtistAlbums artistFilter albumFilter artistAlbums =
+    if artistFilter artistAlbums.artist then
+        let
+            albumsNoGrp =
+                List.filter albumFilter artistAlbums.albumsNoGrouping
+
+            albumsByGrp =
+                artistAlbums.albumsByGrouping
+                    |> List.map (Tuple.mapSecond <| List.filter albumFilter)
+                    |> List.filter (not << List.isEmpty << Tuple.second)
+        in
+        if List.isEmpty albumsNoGrp && List.isEmpty albumsByGrp then
+            Nothing
+
+        else
+            Just
+                { artist = artistAlbums.artist
+                , albumsNoGrouping = albumsNoGrp
+                , albumsByGrouping = albumsByGrp
+                }
+
+    else
+        Nothing
+
+
 getVisibleAlbumsByArtist : State -> List ArtistAlbums
 getVisibleAlbumsByArtist state =
-    let
-        aux albums =
-            List.filter (makeAlbumFilter state.viewOptions state.starredAlbums)
-                albums
-
-        filterGrouping ( grouping, albums ) =
-            let
-                filtered =
-                    aux albums
-            in
-            case filtered of
-                [] ->
-                    Nothing
-
-                _ ->
-                    Just ( grouping, filtered )
-    in
     state.albumsByGenreAndArtist
         |> Dict.get state.viewOptions.genre
         |> Maybe.withDefault []
-        |> List.filter (makeArtistFilter state.viewOptions)
-        |> List.map
-            (\{ artist, albumsNoGrouping, albumsByGrouping } ->
-                { artist = artist
-                , albumsNoGrouping = aux albumsNoGrouping
-                , albumsByGrouping = List.filterMap filterGrouping albumsByGrouping
-                }
-            )
-        |> List.filter
-            (\{ artist, albumsNoGrouping, albumsByGrouping } ->
-                not (List.isEmpty albumsNoGrouping)
-                    || List.any
-                        (not << List.isEmpty << Tuple.second)
-                        albumsByGrouping
+        |> List.filterMap
+            (applyFilterToArtistAlbums
+                (makeArtistFilter state.viewOptions)
+                (makeAlbumFilter state.viewOptions state.starredAlbums)
             )
 
 
-makeArtistFilter : ViewOptions -> (ArtistAlbums -> Bool)
+makeArtistFilter : ViewOptions -> (Artist -> Bool)
 makeArtistFilter viewOptions =
     if String.isEmpty viewOptions.filter then
         always True
@@ -452,7 +455,7 @@ makeArtistFilter viewOptions =
                 String.toLower
                     (String.Normalize.removeDiacritics viewOptions.filter)
         in
-        Catalogue.artistMatchesFilter normalized << .artist
+        Catalogue.artistMatchesFilter normalized
 
 
 makeAlbumFilter : ViewOptions -> StarredAlbums -> (Album -> Bool)
