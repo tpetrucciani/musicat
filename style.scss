@@ -75,7 +75,7 @@ body {
 }
 
 header {
-  padding: 50px 35px 0 35px;
+  padding: 50px 40px 0 40px;
 }
 
 main {
@@ -119,18 +119,23 @@ nav > * {
 }
 
 .artist-list {
-  margin: 35px 0 0 0;
+  margin: 35px 0 0 -15px;
   display: flex;
   flex-flow: row wrap;
+  justify-content: space-between;
   line-height: 1.4;
   color: fade-out($grey-lightest, 0.25);
 
   .artist-list-letter, .artist-list-name {
-    margin: 0 15px 0 0;
+    margin: 0 0 0 15px;
   }
 
   .artist-list-letter {
     color: $orange;
+  }
+
+  & > *:last-child {
+    margin-right: auto;
   }
 }
 
