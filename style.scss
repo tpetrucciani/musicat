@@ -131,7 +131,7 @@ nav > * {
   }
 
   .artist-list-letter {
-    color: $orange;
+    color: fade-out($orange, 0.25);
   }
 
   & > *:last-child {
