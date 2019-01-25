@@ -81,7 +81,7 @@ header {
 main {
   display: flex;
   flex-flow: row wrap;
-  margin: 45px 0 0 0;
+  margin: 45px 0 0 -50px;
   padding: 40px 10px 20px 0;
   border-top: 1px solid $main-border-color;
   border-bottom: 1px solid $main-border-color;
@@ -232,7 +232,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 
 .artist {
-  margin: 0 0 20px 40px;
+  margin: 0 0 20px 90px;
 }
 
 .artist-name {
