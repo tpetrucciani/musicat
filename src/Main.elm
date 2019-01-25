@@ -736,7 +736,7 @@ putIcons album =
                     [ div [ class "icon", class "qobuz" ]
                         [ a
                             [ title "Show in Qobuz"
-                            , href ("qobuzapp://album/" ++ id)
+                            , href ("qobuzapp://" ++ id)
                             ]
                             [ text "Qobuz" ]
                         ]
@@ -751,7 +751,7 @@ putIcons album =
                     [ div [ class "icon", class "spotify" ]
                         [ a
                             [ title "Show in Spotify"
-                            , href ("spotify:album:" ++ id)
+                            , href id
                             ]
                             [ text "Spotify" ]
                         ]

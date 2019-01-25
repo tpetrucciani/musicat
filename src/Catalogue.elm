@@ -210,8 +210,8 @@ albumDecoder genres artists =
     D.map7 Album
         (stringField "cover")
         (D.field "entries" (D.list (entryDecoder genres artists)))
-        (optionalStringField "qobuz")
-        (optionalStringField "spotify")
+        qobuzDecoder
+        spotifyDecoder
         (optionalFieldWithDefault "local" D.bool False)
         (optionalFieldWithDefault "archived" D.bool False)
         (optionalStringField "booklet")
@@ -253,6 +253,37 @@ groupingDecoder =
                 (stringField "grouping")
     in
     D.oneOf [ D.map Just actualGroupingDecoder, D.succeed Nothing ]
+
+
+qobuzDecoder : Decoder (Maybe String)
+qobuzDecoder =
+    let
+        prefix =
+            "https://open.qobuz.com/"
+
+        prefixLength =
+            String.length prefix
+    in
+    optionalStringField "qobuz"
+        |> D.andThen
+            (\s ->
+                case s of
+                    Just s_ ->
+                        if String.startsWith prefix s_ then
+                            D.succeed (Just (String.dropLeft prefixLength s_))
+
+                        else
+                            D.fail
+                                "The field `qobuz` should contain a Qobuz URL"
+
+                    Nothing ->
+                        D.succeed Nothing
+            )
+
+
+spotifyDecoder : Decoder (Maybe String)
+spotifyDecoder =
+    optionalStringField "spotify"
 
 
 configDecoder : Dict GenreId Genre -> Decoder Config
