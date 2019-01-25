@@ -20,9 +20,9 @@ where `catalogue` is the JSON file and where `main.js` and `style.css` are compi
 
 # Main goals for the future
 
-- Improve the layout and UI
+- ~~Improve the layout and UI~~
 - Improve rendering performance (probably using `Html.Lazy` and `Html.Keyed` in Elm)
 - ~~Allow to group albums by sub-genre within each artist (e.g. for classical music we could have albums filed under "Schubert / Orchestral" and "Schubert / Song")~~
-- Add the possibility to "star" and "unstar" albums directly from the web page
+- ~~Add the possibility to "star" and "unstar" albums directly from the web page~~
 - ~~Add album booklets in the catalogue~~
 - Build a script to help in organizing the catalogue and downloading covers
