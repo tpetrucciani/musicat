@@ -649,7 +649,9 @@ displayArtist state { artist, albumsNoGrouping, albumsByGrouping } =
                 [ text (artistName state.catalogue artist) ]
             , div
                 [ class "grouping-links" ]
-                (List.map (displayGroupingLink << Tuple.first) albumsByGrouping)
+                (List.map (displayGroupingLink artist << Tuple.first)
+                    albumsByGrouping
+                )
             , div [ class "album-container" ]
                 (List.map (displayAlbum state.starredAlbums) albumsNoGrouping
                     ++ List.map
@@ -666,9 +668,12 @@ makeId =
     String.Normalize.url
 
 
-displayGroupingLink : Grouping -> Html Msg
-displayGroupingLink grouping =
-    a [ class "grouping-link", href ("#" ++ makeId grouping.name) ]
+displayGroupingLink : Artist -> Grouping -> Html Msg
+displayGroupingLink artist grouping =
+    a
+        [ class "grouping-link"
+        , href ("#" ++ makeId (artist.id ++ "-" ++ grouping.name))
+        ]
         [ text grouping.name ]
 
 
@@ -676,7 +681,10 @@ displayGrouping : StarredAlbums -> Artist -> ( Grouping, List Album ) -> Html Ms
 displayGrouping starredAlbums artist ( grouping, albums ) =
     div [ class "grouping" ]
         (div [ class "grouping-name" ]
-            [ a [ id (makeId grouping.name), href ("#" ++ artist.id) ]
+            [ a
+                [ id (makeId (artist.id ++ "-" ++ grouping.name))
+                , href ("#" ++ artist.id)
+                ]
                 [ text grouping.name ]
             ]
             :: List.map (displayAlbum starredAlbums) albums
