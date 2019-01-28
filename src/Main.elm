@@ -9,6 +9,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode
 import Json.Encode as E
+import List.Extra
 import NaturalOrdering
 import Set exposing (Set)
 import String.Normalize
@@ -42,7 +43,7 @@ type Model
 
 type alias State =
     { catalogue : Catalogue
-    , albumsByGenreAndArtist : Dict GenreId (List ArtistAlbums)
+    , artistsByGenre : Dict GenreId (List ArtistAlbums)
     , viewOptions : ViewOptions
     , starredAlbums : StarredAlbums
     }
@@ -205,63 +206,8 @@ makeModel catalogue flags =
 
 makeState : Catalogue -> List String -> State
 makeState catalogue starredAlbums =
-    let
-        artists =
-            List.sortBy .sortKey catalogue.artists
-
-        albumsByGenreAndArtist : Dict GenreId (List ArtistAlbums)
-        albumsByGenreAndArtist =
-            catalogue.genres
-                |> List.sortBy .sortKey
-                |> List.map .id
-                |> initAssocList albumsByArtistForGenre
-                |> Dict.fromList
-
-        albumsByArtistForGenre : GenreId -> List ArtistAlbums
-        albumsByArtistForGenre genre =
-            artists
-                |> List.map (albumsForGenreAndArtist genre)
-
-        albumsForGenreAndArtist : GenreId -> Artist -> ArtistAlbums
-        albumsForGenreAndArtist genre artist =
-            let
-                matchesGenreArtist : GenreId -> Artist -> Entry -> Bool
-                matchesGenreArtist g a entry =
-                    entry.genre.id == g && entry.artist == a
-
-                matchesGrouping : Maybe Grouping -> Album -> Bool
-                matchesGrouping grouping album =
-                    List.any (\e -> e.grouping == grouping) album.entries
-
-                albums : List Album
-                albums =
-                    catalogue.albums
-                        |> List.filter
-                            (\a ->
-                                List.any (matchesGenreArtist genre artist)
-                                    a.entries
-                            )
-
-                groupings : List Grouping
-                groupings =
-                    List.concatMap
-                        (\a -> List.filterMap (\e -> e.grouping) a.entries)
-                        albums
-                        |> List.sortBy .sortKey
-                        |> deduplicateSortedList
-
-                albumsForGrouping : Maybe Grouping -> List Album
-                albumsForGrouping grouping =
-                    List.filter (matchesGrouping grouping) albums
-            in
-            { artist = artist
-            , albumsNoGrouping = albumsForGrouping Nothing
-            , albumsByGrouping =
-                List.map (\g -> ( g, albumsForGrouping (Just g) )) groupings
-            }
-    in
     { catalogue = catalogue
-    , albumsByGenreAndArtist = albumsByGenreAndArtist
+    , artistsByGenre = makeArtistsByGenre catalogue
     , viewOptions =
         { genre = catalogue.config.selectedGenre
         , filter = ""
@@ -273,28 +219,87 @@ makeState catalogue starredAlbums =
     }
 
 
-deduplicateSortedList : List a -> List a
-deduplicateSortedList l =
-    case l of
-        x :: ((y :: tail) as ll) ->
-            if x == y then
-                deduplicateSortedList ll
-
-            else
-                x :: deduplicateSortedList ll
-
-        _ ->
-            l
+type alias EntryWithAlbum =
+    { genre : Genre
+    , artist : Artist
+    , grouping : Maybe Grouping
+    , album : Album
+    }
 
 
-initAssocList : (a -> b) -> List a -> List ( a, b )
-initAssocList f =
-    List.map (\a -> ( a, f a ))
+makeArtistsByGenre : Catalogue -> Dict GenreId (List ArtistAlbums)
+makeArtistsByGenre catalogue =
+    let
+        albumToEntries : Album -> List EntryWithAlbum
+        albumToEntries album =
+            album.entries
+                |> List.map
+                    (\{ genre, artist, grouping } ->
+                        EntryWithAlbum genre artist grouping album
+                    )
+
+        gatherByArtistAndGrouping : List EntryWithAlbum -> List ArtistAlbums
+        gatherByArtistAndGrouping entries =
+            entries
+                |> List.Extra.gatherEqualsBy .artist
+                |> List.map (toKeyValue .artist)
+                |> List.map gatherByGrouping
+                |> List.sortBy (.artist >> .sortKey)
+
+        gatherByGrouping : ( Artist, List EntryWithAlbum ) -> ArtistAlbums
+        gatherByGrouping ( artist, entries ) =
+            let
+                byGrouping : List ( Maybe Grouping, List Album )
+                byGrouping =
+                    entries
+                        |> List.Extra.gatherEqualsBy .grouping
+                        |> List.map (toKeyValue .grouping)
+                        |> List.map (Tuple.mapSecond (List.map .album))
+
+                albumsNoGrouping =
+                    byGrouping
+                        |> List.filter (isNothing << Tuple.first)
+                        |> List.map Tuple.second
+                        |> List.concat
+
+                albumsByGrouping =
+                    byGrouping
+                        |> List.filterMap
+                            (\( g, a ) ->
+                                case g of
+                                    Just g_ ->
+                                        Just ( g_, a )
+
+                                    Nothing ->
+                                        Nothing
+                            )
+                        |> List.sortBy (Tuple.first >> .sortKey)
+            in
+            { artist = artist
+            , albumsNoGrouping = albumsNoGrouping
+            , albumsByGrouping = albumsByGrouping
+            }
+
+        toKeyValue : (a -> b) -> ( a, List a ) -> ( b, List a )
+        toKeyValue f ( x, xs ) =
+            ( f x, x :: xs )
+    in
+    catalogue.albums
+        |> List.concatMap albumToEntries
+        |> List.Extra.gatherEqualsBy .genre
+        |> List.map (toKeyValue (.genre >> .id))
+        |> List.map (Tuple.mapSecond gatherByArtistAndGrouping)
+        |> Dict.fromList
 
 
-initDict : Set.Set comparable -> (comparable -> a) -> Dict comparable a
-initDict s f =
-    Set.foldl (\x -> Dict.insert x (f x)) Dict.empty s
+isNothing : Maybe a -> Bool
+isNothing x =
+    case x of
+        Nothing ->
+            True
+
+        Just _ ->
+            False
 
 
 
@@ -434,7 +439,7 @@ applyFilterToArtistAlbums artistFilter albumFilter artistAlbums =
 
 getVisibleAlbumsByArtist : State -> List ArtistAlbums
 getVisibleAlbumsByArtist state =
-    state.albumsByGenreAndArtist
+    state.artistsByGenre
         |> Dict.get state.viewOptions.genre
         |> Maybe.withDefault []
         |> List.filterMap
