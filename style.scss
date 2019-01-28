@@ -275,10 +275,10 @@ input[type="search"]::-webkit-search-results-decoration {
   position: relative;
 
   a {
-    padding: 0 8px 0 8px;
+    padding: 0 5px 0 5px;
     background-color: $background-color;
     position: absolute;
-    right: 15px;
+    right: 12px;
     top: -17px;
   }
 }
