@@ -75,13 +75,6 @@ type ArchiveVisibility
     | Both
 
 
-type Source
-    = Local
-    | Spotify
-    | Qobuz
-    | Missing
-
-
 init : E.Value -> ( Model, Cmd Msg )
 init flags =
     ( Loading flags
@@ -212,7 +205,7 @@ makeState catalogue starredAlbums =
         { genre = catalogue.config.selectedGenre
         , filter = ""
         , archiveVisibility = OnlyUnarchived
-        , visibleSources = [ Local, Spotify, Qobuz, Missing ]
+        , visibleSources = catalogue.config.visibleSources
         , onlyStarredVisible = False
         }
     , starredAlbums = Set.fromList starredAlbums

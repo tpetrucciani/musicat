@@ -11,6 +11,7 @@ module Catalogue exposing
     , GenreId
     , Grouping
     , QobuzId
+    , Source(..)
     , SpotifyId
     , artistMatchesFilter
     , catalogueDecoder
@@ -98,7 +99,16 @@ type alias Grouping =
 
 
 type alias Config =
-    { selectedGenre : GenreId }
+    { selectedGenre : GenreId
+    , visibleSources : List Source
+    }
+
+
+type Source
+    = Local
+    | Spotify
+    | Qobuz
+    | Missing
 
 
 
@@ -288,7 +298,37 @@ spotifyDecoder =
 
 configDecoder : Dict GenreId Genre -> Decoder Config
 configDecoder genres =
-    D.map (.id >> Config) (stringFieldWithLookupInDict "selectedGenre" genres)
+    let
+        genre =
+            D.map .id (stringFieldWithLookupInDict "selectedGenre" genres)
+
+        visibleSources =
+            D.field "visibleSources" (D.list sourceDecoder)
+    in
+    D.map2 Config genre visibleSources
+
+
+sourceDecoder : Decoder Source
+sourceDecoder =
+    let
+        stringToSource s =
+            case String.toLower s of
+                "local" ->
+                    D.succeed Local
+
+                "qobuz" ->
+                    D.succeed Qobuz
+
+                "spotify" ->
+                    D.succeed Spotify
+
+                "missing" ->
+                    D.succeed Missing
+
+                _ ->
+                    D.fail ("Unrecognized source " ++ s)
+    in
+    D.andThen stringToSource D.string
 
 
 
