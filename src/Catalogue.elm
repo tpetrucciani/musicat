@@ -66,6 +66,7 @@ type alias Album =
     , local : Bool
     , archived : Bool
     , booklet : Maybe BookletPath
+    , isVisible : Bool
     }
 
 
@@ -217,7 +218,7 @@ artistsDecoder =
 
 albumDecoder : Dict GenreId Genre -> Dict ArtistId Artist -> Decoder Album
 albumDecoder genres artists =
-    D.map7 Album
+    D.map8 Album
         (stringField "cover")
         (D.field "entries" (D.list (entryDecoder genres artists)))
         qobuzDecoder
@@ -225,6 +226,7 @@ albumDecoder genres artists =
         (optionalFieldWithDefault "local" D.bool False)
         (optionalFieldWithDefault "archived" D.bool False)
         (optionalStringField "booklet")
+        (D.succeed True)
 
 
 stringFieldWithLookupInDict : String -> Dict String a -> Decoder a

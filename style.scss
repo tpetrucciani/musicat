@@ -364,3 +364,7 @@ input[type="search"]::-webkit-search-results-decoration {
     background-color: fade-out($icon-bar-background-color, 0.1);
   }
 }
+
+.hidden {
+  display: none;
+}

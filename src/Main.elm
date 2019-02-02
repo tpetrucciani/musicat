@@ -51,8 +51,9 @@ type alias State =
 
 type alias ArtistAlbums =
     { artist : Artist
+    , isVisible : Bool
     , albumsNoGrouping : List Album
-    , albumsByGrouping : List ( Grouping, List Album )
+    , albumsByGrouping : List ( Grouping, Bool, List Album )
     }
 
 
@@ -261,14 +262,15 @@ makeArtistsByGenre catalogue =
                             (\( g, a ) ->
                                 case g of
                                     Just g_ ->
-                                        Just ( g_, a )
+                                        Just ( g_, True, a )
 
                                     Nothing ->
                                         Nothing
                             )
-                        |> List.sortBy (Tuple.first >> .sortKey)
+                        |> List.sortBy (\( g, _, _ ) -> g.sortKey)
             in
             { artist = artist
+            , isVisible = True
             , albumsNoGrouping = albumsNoGrouping
             , albumsByGrouping = albumsByGrouping
             }
@@ -358,7 +360,8 @@ displayArtistList : List ArtistAlbums -> Html Msg
 displayArtistList albumsByArtist =
     let
         artists =
-            List.map .artist albumsByArtist
+            List.filter .isVisible albumsByArtist
+                |> List.map .artist
 
         firstLetter artist =
             String.left 1 artist.sortKey
@@ -413,8 +416,8 @@ applyFilterToArtistAlbums artistFilter albumFilter artistAlbums =
 
             albumsByGrp =
                 artistAlbums.albumsByGrouping
-                    |> List.map (Tuple.mapSecond <| List.filter albumFilter)
-                    |> List.filter (not << List.isEmpty << Tuple.second)
+                    |> List.map (\( g, v, a ) -> ( g, v, List.filter albumFilter a ))
+                    |> List.filter (\( g, v, a ) -> not (List.isEmpty a))
         in
         if List.isEmpty albumsNoGrp && List.isEmpty albumsByGrp then
             Nothing
@@ -422,6 +425,7 @@ applyFilterToArtistAlbums artistFilter albumFilter artistAlbums =
         else
             Just
                 { artist = artistAlbums.artist
+                , isVisible = True
                 , albumsNoGrouping = albumsNoGrp
                 , albumsByGrouping = albumsByGrp
                 }
@@ -435,11 +439,60 @@ getVisibleAlbumsByArtist state =
     state.artistsByGenre
         |> Dict.get state.viewOptions.genre
         |> Maybe.withDefault []
-        |> List.filterMap
-            (applyFilterToArtistAlbums
-                (makeArtistFilter state.viewOptions)
-                (makeAlbumFilter state.viewOptions state.starredAlbums)
-            )
+        |> setVisibility state
+
+
+
+-- |> List.filterMap
+--     (applyFilterToArtistAlbums
+--         (makeArtistFilter state.viewOptions)
+--         (makeAlbumFilter state.viewOptions state.starredAlbums)
+--     )
+
+
+setVisibility : State -> List ArtistAlbums -> List ArtistAlbums
+setVisibility state a =
+    let
+        artistFilter =
+            makeArtistFilter state.viewOptions
+
+        albumFilter =
+            makeAlbumFilter state.viewOptions state.starredAlbums
+
+        aux : ArtistAlbums -> ArtistAlbums
+        aux { artist, albumsNoGrouping, albumsByGrouping } =
+            let
+                albumsNoGrouping_ =
+                    List.map aux2 albumsNoGrouping
+
+                albumsByGrouping_ =
+                    List.map aux3 albumsByGrouping
+
+                isVisible_ =
+                    artistFilter artist
+                        && (List.any .isVisible albumsNoGrouping_
+                                || List.any (\( _, v, _ ) -> v) albumsByGrouping_
+                           )
+            in
+            { artist = artist
+            , isVisible = isVisible_
+            , albumsNoGrouping = albumsNoGrouping_
+            , albumsByGrouping = albumsByGrouping_
+            }
+
+        aux2 : Album -> Album
+        aux2 album =
+            { album | isVisible = albumFilter album }
+
+        aux3 : ( Grouping, Bool, List Album ) -> ( Grouping, Bool, List Album )
+        aux3 ( grouping, isVisible, albums ) =
+            let
+                albums_ =
+                    List.map aux2 albums
+            in
+            ( grouping, List.any .isVisible albums_, albums_ )
+    in
+    List.map aux a
 
 
 makeArtistFilter : ViewOptions -> (Artist -> Bool)
@@ -635,14 +688,14 @@ artistName catalogue artist =
 
 
 displayArtist : State -> ArtistAlbums -> Html Msg
-displayArtist state { artist, albumsNoGrouping, albumsByGrouping } =
+displayArtist state { artist, isVisible, albumsNoGrouping, albumsByGrouping } =
     let
         contents =
             [ a [ class "artist-name", id artist.id, href "#top" ]
                 [ text (artistName state.catalogue artist) ]
             , div
                 [ class "grouping-links" ]
-                (List.map (displayGroupingLink artist << Tuple.first)
+                (List.map (\( g, _, _ ) -> displayGroupingLink artist g)
                     albumsByGrouping
                 )
             , div [ class "album-container" ]
@@ -653,7 +706,7 @@ displayArtist state { artist, albumsNoGrouping, albumsByGrouping } =
                 )
             ]
     in
-    div [ class "artist" ] contents
+    div (withHiddenUnless isVisible [ class "artist" ]) contents
 
 
 makeId : String -> String
@@ -670,9 +723,22 @@ displayGroupingLink artist grouping =
         [ text grouping.name ]
 
 
-displayGrouping : StarredAlbums -> Artist -> ( Grouping, List Album ) -> Html Msg
-displayGrouping starredAlbums artist ( grouping, albums ) =
-    div [ class "grouping" ]
+withHiddenUnless : Bool -> List (Html.Attribute msg) -> List (Html.Attribute msg)
+withHiddenUnless condition classes =
+    if condition then
+        classes
+
+    else
+        class "hidden" :: classes
+
+
+displayGrouping :
+    StarredAlbums
+    -> Artist
+    -> ( Grouping, Bool, List Album )
+    -> Html Msg
+displayGrouping starredAlbums artist ( grouping, isVisible, albums ) =
+    div (withHiddenUnless isVisible [ class "grouping" ])
         (div [ class "grouping-name" ]
             [ a
                 [ id (makeId (artist.id ++ "-" ++ grouping.name))
@@ -707,7 +773,7 @@ displayAlbum starredAlbums album =
                 div starAttrs [ img [ src "resources/star-regular.svg" ] [] ]
     in
     div
-        [ class "album" ]
+        (withHiddenUnless album.isVisible [ class "album" ])
         [ a imageLink
             [ img
                 [ src ("data/covers/" ++ album.cover)
