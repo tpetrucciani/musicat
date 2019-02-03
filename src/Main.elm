@@ -43,17 +43,30 @@ type Model
 
 type alias State =
     { catalogue : Catalogue
-    , artistsByGenre : Dict GenreId (List ArtistAlbums)
+    , artistsByGenre : Dict GenreId (List ArtistEntry)
     , viewOptions : ViewOptions
     , starredAlbums : StarredAlbums
     }
 
 
-type alias ArtistAlbums =
+type alias ArtistEntry =
     { artist : Artist
+    , albumsNoGrouping : List AlbumEntry
+    , albumsByGrouping : List GroupingEntry
     , isVisible : Bool
-    , albumsNoGrouping : List Album
-    , albumsByGrouping : List ( Grouping, Bool, List Album )
+    }
+
+
+type alias GroupingEntry =
+    { grouping : Grouping
+    , albums : List AlbumEntry
+    , isVisible : Bool
+    }
+
+
+type alias AlbumEntry =
+    { album : Album
+    , isVisible : Bool
     }
 
 
@@ -217,11 +230,11 @@ type alias EntryWithAlbum =
     { genre : Genre
     , artist : Artist
     , grouping : Maybe Grouping
-    , album : Album
+    , album : AlbumEntry
     }
 
 
-makeArtistsByGenre : Catalogue -> Dict GenreId (List ArtistAlbums)
+makeArtistsByGenre : Catalogue -> Dict GenreId (List ArtistEntry)
 makeArtistsByGenre catalogue =
     let
         albumToEntries : Album -> List EntryWithAlbum
@@ -229,10 +242,14 @@ makeArtistsByGenre catalogue =
             album.entries
                 |> List.map
                     (\{ genre, artist, grouping } ->
-                        EntryWithAlbum genre artist grouping album
+                        EntryWithAlbum
+                            genre
+                            artist
+                            grouping
+                            { album = album, isVisible = True }
                     )
 
-        gatherByArtistAndGrouping : List EntryWithAlbum -> List ArtistAlbums
+        gatherByArtistAndGrouping : List EntryWithAlbum -> List ArtistEntry
         gatherByArtistAndGrouping entries =
             entries
                 |> List.Extra.gatherEqualsBy .artist
@@ -240,10 +257,10 @@ makeArtistsByGenre catalogue =
                 |> List.map gatherByGrouping
                 |> List.sortBy (.artist >> .sortKey)
 
-        gatherByGrouping : ( Artist, List EntryWithAlbum ) -> ArtistAlbums
+        gatherByGrouping : ( Artist, List EntryWithAlbum ) -> ArtistEntry
         gatherByGrouping ( artist, entries ) =
             let
-                byGrouping : List ( Maybe Grouping, List Album )
+                byGrouping : List ( Maybe Grouping, List AlbumEntry )
                 byGrouping =
                     entries
                         |> List.Extra.gatherEqualsBy .grouping
@@ -262,17 +279,21 @@ makeArtistsByGenre catalogue =
                             (\( g, a ) ->
                                 case g of
                                     Just g_ ->
-                                        Just ( g_, True, a )
+                                        Just
+                                            { grouping = g_
+                                            , albums = a
+                                            , isVisible = True
+                                            }
 
                                     Nothing ->
                                         Nothing
                             )
-                        |> List.sortBy (\( g, _, _ ) -> g.sortKey)
+                        |> List.sortBy (.grouping >> .sortKey)
             in
             { artist = artist
-            , isVisible = True
             , albumsNoGrouping = albumsNoGrouping
             , albumsByGrouping = albumsByGrouping
+            , isVisible = True
             }
 
         toKeyValue : (a -> b) -> ( a, List a ) -> ( b, List a )
@@ -356,7 +377,7 @@ viewBody model =
             ]
 
 
-displayArtistList : List ArtistAlbums -> Html Msg
+displayArtistList : List ArtistEntry -> Html Msg
 displayArtistList albumsByArtist =
     let
         artists =
@@ -403,38 +424,7 @@ displayArtistList albumsByArtist =
     div [ class "artist-list" ] artistLinks
 
 
-applyFilterToArtistAlbums :
-    (Artist -> Bool)
-    -> (Album -> Bool)
-    -> ArtistAlbums
-    -> Maybe ArtistAlbums
-applyFilterToArtistAlbums artistFilter albumFilter artistAlbums =
-    if artistFilter artistAlbums.artist then
-        let
-            albumsNoGrp =
-                List.filter albumFilter artistAlbums.albumsNoGrouping
-
-            albumsByGrp =
-                artistAlbums.albumsByGrouping
-                    |> List.map (\( g, v, a ) -> ( g, v, List.filter albumFilter a ))
-                    |> List.filter (\( g, v, a ) -> not (List.isEmpty a))
-        in
-        if List.isEmpty albumsNoGrp && List.isEmpty albumsByGrp then
-            Nothing
-
-        else
-            Just
-                { artist = artistAlbums.artist
-                , isVisible = True
-                , albumsNoGrouping = albumsNoGrp
-                , albumsByGrouping = albumsByGrp
-                }
-
-    else
-        Nothing
-
-
-getVisibleAlbumsByArtist : State -> List ArtistAlbums
+getVisibleAlbumsByArtist : State -> List ArtistEntry
 getVisibleAlbumsByArtist state =
     state.artistsByGenre
         |> Dict.get state.viewOptions.genre
@@ -442,15 +432,7 @@ getVisibleAlbumsByArtist state =
         |> setVisibility state
 
 
-
--- |> List.filterMap
---     (applyFilterToArtistAlbums
---         (makeArtistFilter state.viewOptions)
---         (makeAlbumFilter state.viewOptions state.starredAlbums)
---     )
-
-
-setVisibility : State -> List ArtistAlbums -> List ArtistAlbums
+setVisibility : State -> List ArtistEntry -> List ArtistEntry
 setVisibility state a =
     let
         artistFilter =
@@ -459,7 +441,7 @@ setVisibility state a =
         albumFilter =
             makeAlbumFilter state.viewOptions state.starredAlbums
 
-        aux : ArtistAlbums -> ArtistAlbums
+        aux : ArtistEntry -> ArtistEntry
         aux { artist, albumsNoGrouping, albumsByGrouping } =
             let
                 albumsNoGrouping_ =
@@ -471,7 +453,7 @@ setVisibility state a =
                 isVisible_ =
                     artistFilter artist
                         && (List.any .isVisible albumsNoGrouping_
-                                || List.any (\( _, v, _ ) -> v) albumsByGrouping_
+                                || List.any .isVisible albumsByGrouping_
                            )
             in
             { artist = artist
@@ -480,17 +462,20 @@ setVisibility state a =
             , albumsByGrouping = albumsByGrouping_
             }
 
-        aux2 : Album -> Album
-        aux2 album =
-            { album | isVisible = albumFilter album }
+        aux2 : AlbumEntry -> AlbumEntry
+        aux2 { album } =
+            { album = album, isVisible = albumFilter album }
 
-        aux3 : ( Grouping, Bool, List Album ) -> ( Grouping, Bool, List Album )
-        aux3 ( grouping, isVisible, albums ) =
+        aux3 : GroupingEntry -> GroupingEntry
+        aux3 { grouping, albums } =
             let
                 albums_ =
                     List.map aux2 albums
             in
-            ( grouping, List.any .isVisible albums_, albums_ )
+            { grouping = grouping
+            , isVisible = List.any .isVisible albums_
+            , albums = albums_
+            }
     in
     List.map aux a
 
@@ -687,7 +672,7 @@ artistName catalogue artist =
     artist.name
 
 
-displayArtist : State -> ArtistAlbums -> Html Msg
+displayArtist : State -> ArtistEntry -> Html Msg
 displayArtist state { artist, isVisible, albumsNoGrouping, albumsByGrouping } =
     let
         contents =
@@ -695,8 +680,9 @@ displayArtist state { artist, isVisible, albumsNoGrouping, albumsByGrouping } =
                 [ text (artistName state.catalogue artist) ]
             , div
                 [ class "grouping-links" ]
-                (List.map (\( g, _, _ ) -> displayGroupingLink artist g)
-                    albumsByGrouping
+                (albumsByGrouping
+                    |> List.filter .isVisible
+                    |> List.map (.grouping >> displayGroupingLink artist)
                 )
             , div [ class "album-container" ]
                 (List.map (displayAlbum state.starredAlbums) albumsNoGrouping
@@ -732,12 +718,8 @@ withHiddenUnless condition classes =
         class "hidden" :: classes
 
 
-displayGrouping :
-    StarredAlbums
-    -> Artist
-    -> ( Grouping, Bool, List Album )
-    -> Html Msg
-displayGrouping starredAlbums artist ( grouping, isVisible, albums ) =
+displayGrouping : StarredAlbums -> Artist -> GroupingEntry -> Html Msg
+displayGrouping starredAlbums artist { grouping, isVisible, albums } =
     div (withHiddenUnless isVisible [ class "grouping" ])
         (div [ class "grouping-name" ]
             [ a
@@ -750,8 +732,8 @@ displayGrouping starredAlbums artist ( grouping, isVisible, albums ) =
         )
 
 
-displayAlbum : StarredAlbums -> Album -> Html Msg
-displayAlbum starredAlbums album =
+displayAlbum : StarredAlbums -> AlbumEntry -> Html Msg
+displayAlbum starredAlbums { album, isVisible } =
     let
         imageLink =
             case album.spotify of
@@ -773,7 +755,7 @@ displayAlbum starredAlbums album =
                 div starAttrs [ img [ src "resources/star-regular.svg" ] [] ]
     in
     div
-        (withHiddenUnless album.isVisible [ class "album" ])
+        (withHiddenUnless isVisible [ class "album" ])
         [ a imageLink
             [ img
                 [ src ("data/covers/" ++ album.cover)
