@@ -67,6 +67,7 @@ type alias GroupingEntry =
 type alias AlbumEntry =
     { album : Album
     , isVisible : Bool
+    , isStarred : Bool
     }
 
 
@@ -246,7 +247,7 @@ makeArtistsByGenre catalogue =
                             genre
                             artist
                             grouping
-                            { album = album, isVisible = True }
+                            { album = album, isVisible = True, isStarred = False }
                     )
 
         gatherByArtistAndGrouping : List EntryWithAlbum -> List ArtistEntry
@@ -464,7 +465,10 @@ setVisibility state a =
 
         aux2 : AlbumEntry -> AlbumEntry
         aux2 { album } =
-            { album = album, isVisible = albumFilter album }
+            { album = album
+            , isVisible = albumFilter album
+            , isStarred = Set.member album.cover state.starredAlbums
+            }
 
         aux3 : GroupingEntry -> GroupingEntry
         aux3 { grouping, albums } =
@@ -685,9 +689,9 @@ displayArtist state { artist, isVisible, albumsNoGrouping, albumsByGrouping } =
                     |> List.map (.grouping >> displayGroupingLink artist)
                 )
             , div [ class "album-container" ]
-                (List.map (displayAlbum state.starredAlbums) albumsNoGrouping
+                (List.map displayAlbum albumsNoGrouping
                     ++ List.map
-                        (displayGrouping state.starredAlbums artist)
+                        (displayGrouping artist)
                         albumsByGrouping
                 )
             ]
@@ -718,8 +722,8 @@ withHiddenUnless condition classes =
         class "hidden" :: classes
 
 
-displayGrouping : StarredAlbums -> Artist -> GroupingEntry -> Html Msg
-displayGrouping starredAlbums artist { grouping, isVisible, albums } =
+displayGrouping : Artist -> GroupingEntry -> Html Msg
+displayGrouping artist { grouping, isVisible, albums } =
     div (withHiddenUnless isVisible [ class "grouping" ])
         (div [ class "grouping-name" ]
             [ a
@@ -728,12 +732,12 @@ displayGrouping starredAlbums artist { grouping, isVisible, albums } =
                 ]
                 [ text grouping.name ]
             ]
-            :: List.map (displayAlbum starredAlbums) albums
+            :: List.map displayAlbum albums
         )
 
 
-displayAlbum : StarredAlbums -> AlbumEntry -> Html Msg
-displayAlbum starredAlbums { album, isVisible } =
+displayAlbum : AlbumEntry -> Html Msg
+displayAlbum { album, isVisible, isStarred } =
     let
         imageLink =
             case album.spotify of
@@ -747,7 +751,7 @@ displayAlbum starredAlbums { album, isVisible } =
             [ class "star", onClick (ToggleStarred album.cover) ]
 
         star =
-            if Set.member album.cover starredAlbums then
+            if isStarred then
                 div (starAttrs ++ [ class "starred" ])
                     [ img [ src "resources/star-solid.svg" ] [] ]
 
