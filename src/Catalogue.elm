@@ -12,6 +12,7 @@ module Catalogue exposing
     , Grouping
     , QobuzId
     , Source(..)
+    , ArchiveVisibility(..)
     , SpotifyId
     , artistMatchesFilter
     , catalogueDecoder
@@ -109,6 +110,12 @@ type Source
     | Spotify
     | Qobuz
     | Missing
+
+
+type ArchiveVisibility
+    = OnlyUnarchived
+    | OnlyArchived
+    | Both
 
 
 
