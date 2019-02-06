@@ -1,4 +1,4 @@
-port module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
+module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
 
 import Browser
 import Catalogue exposing (..)
@@ -11,8 +11,10 @@ import Json.Decode
 import Json.Encode as E
 import List.Extra
 import NaturalOrdering
+import Ports
 import Set exposing (Set)
 import String.Normalize
+import Utils.Maybe
 
 
 
@@ -26,9 +28,6 @@ main =
         , subscriptions = subscriptions
         , view = view
         }
-
-
-port cache : E.Value -> Cmd msg
 
 
 
@@ -167,7 +166,7 @@ update msg model =
                         encodedNewStarredAlbums =
                             E.list E.string (Set.toList newStarredAlbums)
                     in
-                    ( Success newState, cache encodedNewStarredAlbums )
+                    ( Success newState, Ports.setLocalStorage encodedNewStarredAlbums )
 
                 _ ->
                     ( model, Cmd.none )
@@ -527,25 +526,15 @@ matchesSourceVisibility album source =
             album.local
 
         Spotify ->
-            isJust album.spotify
+            Utils.Maybe.isJust album.spotify
 
         Qobuz ->
-            isJust album.qobuz
+            Utils.Maybe.isJust album.qobuz
 
         Missing ->
             not album.local
-                && not (isJust album.spotify)
-                && not (isJust album.qobuz)
-
-
-isJust : Maybe a -> Bool
-isJust x =
-    case x of
-        Just _ ->
-            True
-
-        Nothing ->
-            False
+                && not (Utils.Maybe.isJust album.spotify)
+                && not (Utils.Maybe.isJust album.qobuz)
 
 
 displayGenres : State -> Html Msg
