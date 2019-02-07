@@ -2,15 +2,15 @@ module View exposing (view)
 
 import Browser
 import Catalogue exposing (..)
+import Data exposing (..)
 import Dict exposing (Dict)
-import Set exposing (Set)
 import Html exposing (Html, a, div, img, input, text)
 import Html.Attributes exposing (class, href, id, placeholder, src, title, value)
 import Html.Events exposing (onClick, onInput)
 import Messages exposing (Msg(..), SetViewMsg(..))
 import Model exposing (..)
+import Set exposing (Set)
 import String.Normalize
-import Utils.Maybe
 
 
 view : Model -> Browser.Document Msg
@@ -32,7 +32,7 @@ viewBody model =
         Success state ->
             let
                 visibleAlbumsByArtist =
-                    getVisibleAlbumsByArtist state
+                    state.pageContents
             in
             [ Html.div [ id "top" ] []
             , Html.header []
@@ -106,119 +106,6 @@ displayArtistList albumsByArtist =
     div [ class "artist-list" ] artistLinks
 
 
-getVisibleAlbumsByArtist : State -> List ArtistEntry
-getVisibleAlbumsByArtist state =
-    state.artistsByGenre
-        |> Dict.get state.viewOptions.genre
-        |> Maybe.withDefault []
-        |> setVisibility state
-
-
-setVisibility : State -> List ArtistEntry -> List ArtistEntry
-setVisibility state a =
-    let
-        artistFilter =
-            makeArtistFilter state.viewOptions
-
-        albumFilter =
-            makeAlbumFilter state.viewOptions state.starredAlbums
-
-        aux : ArtistEntry -> ArtistEntry
-        aux { artist, albumsNoGrouping, albumsByGrouping } =
-            let
-                albumsNoGrouping_ =
-                    List.map aux2 albumsNoGrouping
-
-                albumsByGrouping_ =
-                    List.map aux3 albumsByGrouping
-
-                isVisible_ =
-                    artistFilter artist
-                        && (List.any .isVisible albumsNoGrouping_
-                                || List.any .isVisible albumsByGrouping_
-                           )
-            in
-            { artist = artist
-            , isVisible = isVisible_
-            , albumsNoGrouping = albumsNoGrouping_
-            , albumsByGrouping = albumsByGrouping_
-            }
-
-        aux2 : AlbumEntry -> AlbumEntry
-        aux2 { album } =
-            { album = album
-            , isVisible = albumFilter album
-            , isStarred = Set.member album.cover state.starredAlbums
-            }
-
-        aux3 : GroupingEntry -> GroupingEntry
-        aux3 { grouping, albums } =
-            let
-                albums_ =
-                    List.map aux2 albums
-            in
-            { grouping = grouping
-            , isVisible = List.any .isVisible albums_
-            , albums = albums_
-            }
-    in
-    List.map aux a
-
-
-makeArtistFilter : ViewOptions -> (Artist -> Bool)
-makeArtistFilter viewOptions =
-    if String.isEmpty viewOptions.filter then
-        always True
-
-    else
-        let
-            normalized =
-                String.toLower
-                    (String.Normalize.removeDiacritics viewOptions.filter)
-        in
-        Catalogue.artistMatchesFilter normalized
-
-
-makeAlbumFilter : ViewOptions -> StarredAlbums -> (Album -> Bool)
-makeAlbumFilter viewOptions starredAlbums album =
-    matchesArchiveVisibility album viewOptions.archiveVisibility
-        && List.any (matchesSourceVisibility album) viewOptions.visibleSources
-        && (not viewOptions.onlyStarredVisible
-                || Set.member album.cover starredAlbums
-           )
-
-
-matchesArchiveVisibility : Album -> ArchiveVisibility -> Bool
-matchesArchiveVisibility album archiveVisibility =
-    case archiveVisibility of
-        OnlyUnarchived ->
-            not album.archived
-
-        OnlyArchived ->
-            album.archived
-
-        Both ->
-            True
-
-
-matchesSourceVisibility : Album -> Source -> Bool
-matchesSourceVisibility album source =
-    case source of
-        Local ->
-            album.local
-
-        Spotify ->
-            Utils.Maybe.isJust album.spotify
-
-        Qobuz ->
-            Utils.Maybe.isJust album.qobuz
-
-        Missing ->
-            not album.local
-                && not (Utils.Maybe.isJust album.spotify)
-                && not (Utils.Maybe.isJust album.qobuz)
-
-
 displayGenres : State -> Html Msg
 displayGenres state =
     let
@@ -241,7 +128,7 @@ displaySearchBar state =
         [ input
             [ placeholder "type to filter…"
             , value state.viewOptions.filter
-            , onInput (SetView << ChangeFilter)
+            , onInput (SetView << SetFilter)
             , Html.Attributes.autofocus True
             , Html.Attributes.type_ "search"
             ]
@@ -254,7 +141,7 @@ displayArchiveVisibilitySelector state =
     let
         mkRadio visibility =
             radio
-                (SetView <| ChangeArchiveVisibility visibility)
+                (SetView <| SetArchiveVisibility visibility)
                 (String.toLower (archiveVisibilityName visibility))
                 (state.viewOptions.archiveVisibility == visibility)
     in

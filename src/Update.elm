@@ -1,71 +1,89 @@
 module Update exposing (update)
 
 import Catalogue exposing (..)
+import Data exposing (..)
+import Decoders
 import Dict exposing (Dict)
 import Http
 import Json.Decode
-import Json.Encode as E
+import Json.Encode
 import List.Extra
-import Messages exposing (..)
-import Model exposing (..)
+import Messages exposing (Msg(..), SetViewMsg(..))
+import Model exposing (Model(..))
 import Ports
 import Set exposing (Set)
+import String.Normalize
 import Utils.Maybe
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case model of
-        Loading flags ->
-            case msg of
-                GotCatalogue result ->
-                    case result of
-                        Ok catalogue ->
-                            ( makeModel catalogue flags, Cmd.none )
+    case ( model, msg ) of
+        ( Loading flags, GotCatalogue result ) ->
+            handleGotCatalogue flags result
 
-                        Err (Http.BadBody err) ->
-                            ( Failure err, Cmd.none )
+        ( Success state, SetView setViewMsg ) ->
+            handleSetView state setViewMsg
 
-                        Err _ ->
-                            ( Failure "Error", Cmd.none )
+        ( Success state, ToggleStarred albumToToggle ) ->
+            handleToggleStarred state albumToToggle
 
-                _ ->
-                    ( model, Cmd.none )
-
-        Failure _ ->
+        _ ->
             ( model, Cmd.none )
 
-        Success state ->
-            case msg of
-                SetView viewMsg ->
-                    let
-                        newViewOptions =
-                            setView viewMsg state.viewOptions
 
-                        newState =
-                            { state | viewOptions = newViewOptions }
-                    in
-                    ( Success newState, Cmd.none )
+handleGotCatalogue :
+    Json.Encode.Value
+    -> Result Http.Error Catalogue
+    -> ( Model, Cmd Msg )
+handleGotCatalogue flags result =
+    let
+        flagsResult =
+            Json.Decode.decodeValue Decoders.starredAlbums flags
+    in
+    case ( result, flagsResult ) of
+        ( Ok catalogue, Ok starredAlbums ) ->
+            ( Success (makeState catalogue starredAlbums), Cmd.none )
 
-                ToggleStarred id ->
-                    let
-                        newStarredAlbums =
-                            if Set.member id state.starredAlbums then
-                                Set.remove id state.starredAlbums
+        ( Ok catalogue, Err _ ) ->
+            ( Success (makeState catalogue Set.empty), Cmd.none )
 
-                            else
-                                Set.insert id state.starredAlbums
+        ( Err (Http.BadBody err), _ ) ->
+            ( Failure err, Cmd.none )
 
-                        newState =
-                            { state | starredAlbums = newStarredAlbums }
+        ( Err _, _ ) ->
+            ( Failure "Error", Cmd.none )
 
-                        encodedNewStarredAlbums =
-                            E.list E.string (Set.toList newStarredAlbums)
-                    in
-                    ( Success newState, Ports.setLocalStorage encodedNewStarredAlbums )
 
-                _ ->
-                    ( model, Cmd.none )
+handleSetView : State -> SetViewMsg -> ( Model, Cmd Msg )
+handleSetView state setViewMsg =
+    let
+        newViewOptions =
+            setView setViewMsg state.viewOptions
+
+        newState =
+            updatePageContents { state | viewOptions = newViewOptions }
+    in
+    ( Success newState, Cmd.none )
+
+
+handleToggleStarred : State -> CoverPath -> ( Model, Cmd Msg )
+handleToggleStarred state coverPath =
+    let
+        newStarredAlbums =
+            if Set.member coverPath state.starredAlbums then
+                Set.remove coverPath state.starredAlbums
+
+            else
+                Set.insert coverPath state.starredAlbums
+
+        newState =
+            updatePageContents { state | starredAlbums = newStarredAlbums }
+
+        encodedNewStarredAlbums =
+            Json.Encode.list Json.Encode.string (Set.toList newStarredAlbums)
+    in
+    ( Success newState, Ports.setLocalStorage encodedNewStarredAlbums )
 
 
 setView : SetViewMsg -> ViewOptions -> ViewOptions
@@ -74,10 +92,10 @@ setView viewMsg viewOptions =
         SetGenre genre ->
             { viewOptions | genre = genre }
 
-        ChangeFilter filter ->
+        SetFilter filter ->
             { viewOptions | filter = filter }
 
-        ChangeArchiveVisibility archiveVisibility ->
+        SetArchiveVisibility archiveVisibility ->
             { viewOptions | archiveVisibility = archiveVisibility }
 
         ToggleSourceVisibility source ->
@@ -97,20 +115,9 @@ setView viewMsg viewOptions =
             }
 
 
-makeModel : Catalogue -> E.Value -> Model
-makeModel catalogue flags =
-    case Json.Decode.decodeValue (Json.Decode.list Json.Decode.string) flags of
-        Ok starredAlbums ->
-            Success (makeState catalogue starredAlbums)
-
-        Err e ->
-            Success (makeState catalogue [])
-
-
-makeState : Catalogue -> List String -> State
+makeState : Catalogue -> StarredAlbums -> State
 makeState catalogue starredAlbums =
     { catalogue = catalogue
-    , artistsByGenre = makeArtistsByGenre catalogue
     , viewOptions =
         { genre = catalogue.config.selectedGenre
         , filter = ""
@@ -118,8 +125,11 @@ makeState catalogue starredAlbums =
         , visibleSources = catalogue.config.visibleSources
         , onlyStarredVisible = False
         }
-    , starredAlbums = Set.fromList starredAlbums
+    , starredAlbums = starredAlbums
+    , byGenre = makeArtistsByGenre catalogue
+    , pageContents = []
     }
+        |> updatePageContents
 
 
 type alias EntryWithAlbum =
@@ -202,3 +212,121 @@ makeArtistsByGenre catalogue =
         |> List.map (toKeyValue (.genre >> .id))
         |> List.map (Tuple.mapSecond gatherByArtistAndGrouping)
         |> Dict.fromList
+
+
+{-| Recompute the `pageContents` field using the other fields.
+-}
+updatePageContents : State -> State
+updatePageContents state =
+    let
+        pageContents =
+            Dict.get state.viewOptions.genre state.byGenre
+                |> Maybe.withDefault []
+                |> setVisibility state
+    in
+    { state | pageContents = pageContents }
+
+
+setVisibility : State -> List ArtistEntry -> List ArtistEntry
+setVisibility state a =
+    let
+        artistFilter =
+            makeArtistFilter state.viewOptions
+
+        albumFilter =
+            makeAlbumFilter state.viewOptions state.starredAlbums
+
+        aux : ArtistEntry -> ArtistEntry
+        aux { artist, albumsNoGrouping, albumsByGrouping } =
+            let
+                albumsNoGrouping_ =
+                    List.map aux2 albumsNoGrouping
+
+                albumsByGrouping_ =
+                    List.map aux3 albumsByGrouping
+
+                isVisible_ =
+                    artistFilter artist
+                        && (List.any .isVisible albumsNoGrouping_
+                                || List.any .isVisible albumsByGrouping_
+                           )
+            in
+            { artist = artist
+            , isVisible = isVisible_
+            , albumsNoGrouping = albumsNoGrouping_
+            , albumsByGrouping = albumsByGrouping_
+            }
+
+        aux2 : AlbumEntry -> AlbumEntry
+        aux2 { album } =
+            { album = album
+            , isVisible = albumFilter album
+            , isStarred = Set.member album.cover state.starredAlbums
+            }
+
+        aux3 : GroupingEntry -> GroupingEntry
+        aux3 { grouping, albums } =
+            let
+                albums_ =
+                    List.map aux2 albums
+            in
+            { grouping = grouping
+            , isVisible = List.any .isVisible albums_
+            , albums = albums_
+            }
+    in
+    List.map aux a
+
+
+makeArtistFilter : ViewOptions -> (Artist -> Bool)
+makeArtistFilter viewOptions =
+    if String.isEmpty viewOptions.filter then
+        always True
+
+    else
+        let
+            normalized =
+                String.toLower
+                    (String.Normalize.removeDiacritics viewOptions.filter)
+        in
+        Catalogue.artistMatchesFilter normalized
+
+
+makeAlbumFilter : ViewOptions -> StarredAlbums -> (Album -> Bool)
+makeAlbumFilter viewOptions starredAlbums album =
+    matchesArchiveVisibility album viewOptions.archiveVisibility
+        && List.any (matchesSourceVisibility album) viewOptions.visibleSources
+        && (not viewOptions.onlyStarredVisible
+                || Set.member album.cover starredAlbums
+           )
+
+
+matchesArchiveVisibility : Album -> ArchiveVisibility -> Bool
+matchesArchiveVisibility album archiveVisibility =
+    case archiveVisibility of
+        OnlyUnarchived ->
+            not album.archived
+
+        OnlyArchived ->
+            album.archived
+
+        Both ->
+            True
+
+
+matchesSourceVisibility : Album -> Source -> Bool
+matchesSourceVisibility album source =
+    case source of
+        Local ->
+            album.local
+
+        Spotify ->
+            Utils.Maybe.isJust album.spotify
+
+        Qobuz ->
+            Utils.Maybe.isJust album.qobuz
+
+        Missing ->
+            not album.local
+                && not (Utils.Maybe.isJust album.spotify)
+                && not (Utils.Maybe.isJust album.qobuz)

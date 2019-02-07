@@ -1,6 +1,6 @@
 module Messages exposing (Msg(..), SetViewMsg(..))
 
-import Catalogue exposing (..)
+import Data exposing (ArchiveVisibility, Catalogue, GenreId, Source)
 import Http
 
 
@@ -12,7 +12,7 @@ type Msg
 
 type SetViewMsg
     = SetGenre GenreId
-    | ChangeFilter String
-    | ChangeArchiveVisibility ArchiveVisibility
+    | SetFilter String
+    | SetArchiveVisibility ArchiveVisibility
     | ToggleSourceVisibility Source
     | ToggleOnlyStarredVisible
